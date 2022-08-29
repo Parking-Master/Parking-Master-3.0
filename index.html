@@ -66,6 +66,7 @@
     </div>
     <img id="rearcamera" src="images/rearcamera.png" style="position:absolute;display:none;width:100%;height:100%;margin:0;padding:0;left:0;top:0;bottom:0;right:0;border:none;" />
     <script>
+      didplaycrashsoundtwice = false;
       window.addEventListener("load", (e) => {
         swal({
           title: "How to play:",
@@ -124,8 +125,10 @@
       outlinellock = 1;
       collisionfollower=new THREE.Mesh(new THREE.BoxGeometry(6, 3, 3));
       Notiflix.Notify.init({clickToClose:true,showOnlyTheLastOne:true,timeout:6000000,info:{background:"#fff",textColor:"#333",notiflixIconColor:"#333"}});
+      carwasintheair = false;
       function crash() {
-        (()=>{let x=new THREE.Mesh(new THREE.CircleGeometry(5,32),new THREE.MeshBasicMaterial({map:(new THREE.TextureLoader).load("https://fps5.ml/images/explosion.png"),side:THREE.DoubleSide,transparent:true}));let v=new THREE.SpotLight(0xffffff,4);v.position.copy(car.position),x.position.copy(car.position),x.rotation.copy(car.rotation),x.updateMatrix(),x.translateX(1),x.lookAt(camera.position),scene.add(x),v.lookAt(camera.position),scene.add(v);setTimeout(()=>{let f=setInterval(()=>{!(x.material.opacity<=0)?x.material.opacity+=-.1:(scene.remove(x),scene.remove(v),clearInterval(f))},10)},500);(()=>{let t=0;setInterval(()=>{t+=.025;car.rotateZ(.01),car.position.y+=-t})})()})();
+        (()=>{let isup=false,isdown=true;let i=setInterval(()=>{!isup?(camera.rotateX(.05),isup=true,isdown=false):(camera.rotateX(-.05),isup=false,isdown=true)});setTimeout(()=>clearInterval(i),200)})();
+        (()=>{let x=new THREE.Mesh(new THREE.CircleGeometry(5,32),new THREE.MeshBasicMaterial({map:(new THREE.TextureLoader).load("https://fps5.ml/images/explosion.png"),side:THREE.DoubleSide,transparent:true}));let v=new THREE.SpotLight(0xffffff,4);v.position.copy(car.position),x.position.copy(car.position),x.rotation.copy(car.rotation),x.updateMatrix(),x.translateX(1),x.lookAt(camera.position),scene.add(x),v.lookAt(camera.position),scene.add(v);setTimeout(()=>{let f=setInterval(()=>{!(x.material.opacity<=0)?x.material.opacity+=-.1:(scene.remove(x),scene.remove(v),clearInterval(f))},10)},500);(()=>{let t=0;setInterval(()=>{if(!didCrashAfterCrash){t+=.001;car.rotateZ(.005);car.position.y+=-t}else{!didplaycrashsoundtwice&&(carCrashSound.pause(),carCrashSound.currentTime=0,carCrashSound.play(),didplaycrashsoundtwice=true)}})})()})();
         carCrashSound.play();
         car.rotateZ(.7);
         setTimeout(() => {
@@ -154,6 +157,7 @@
           top.location.replace("/");
         });
       }
+      didCrashAfterCrash = false;
       function animate() {
         typeof character != "undefined" && ((() => { let k = car.clone(); k.rotation.y += Math.PI / 2; character.position.copy(car.position), character.rotation.copy(k.rotation), character.updateMatrix(), character.translateX(-.8), character.translateY(-2), character.translateZ(.5), character.scale.set(1.4,1.4,1.4) })(), (currentCamera == 1) ? (!(scene.children.indexOf(character) > -1) && scene.add(character)) : ((scene.children.indexOf(character) > -1 && scene.remove(character))));
         typeof car.children[0] != "undefined" && (raycastTargets=[car.children[0].children[1],scene.getObjectByName("material_5_16")]);
@@ -177,6 +181,7 @@
           recentlytouchedstereo = false;
         }
         typeof map!="undefined"&&!didCrash&&(()=>{let r=collisionfollower;r.position.copy(car.position);r.rotation.copy(car.rotation);r.updateMatrix();r.translateY(1);(collision(r,map.children[8])||collision(r,map.children[9])||collision(r,map.children[10])||collision(r,map.children[11]))&&(crash(),didCrash=true)})();
+        didCrash&&(()=>{let r=collisionfollower;r.position.copy(car.position);r.rotation.copy(car.rotation);r.updateMatrix();r.translateY(1);collision(collisionfollower,map.children[8])&&(didCrashAfterCrash=true)})();
         renderer.render(scene, camera);
         requestAnimationFrame(animate);
       }
@@ -203,13 +208,13 @@
       }
       function drive(direction) {
         if (direction == "forward") {
-          carAcceleration >= 1 || (carAcceleration += .01);
+          carAcceleration >= .2 || (carAcceleration += .01);
           car.translateX(carAcceleration);
           accelerateSound.play();
           decelerateSound.pause();
         }
         if (direction == "backward") {
-          carAcceleration >= 1 || (carAcceleration += .01);
+          carAcceleration >= .2 || (carAcceleration += .01);
           car.translateX(-carAcceleration);
           accelerateSound.play();
           decelerateSound.pause();
@@ -303,11 +308,13 @@
       document.addEventListener("keyup", (e) => {
         carAcceleration = 0;
         if (e.key == "ArrowUp") {
-          let t = 1;
+          let t = .2;
+          let v = 0;
           carShiftedType == "drive" ? isDrivingForward = false : isDrivingBackward = false;
           let i = setInterval(() => {
-            t += -.005;
+            t += -.0005;
             (t <= 0 || isStopped) && (clearInterval(i), isMoving = false);
+            (t <= .05 && setInterval(() => { if (car.position.y > 0) { carwasintheair = true; v >= .001 || (v += .0001); car.position.y += -v } else if (carwasintheair) { carwasintheair = false; (()=>{let isup=false,isdown=true;let i=setInterval(()=>{!isup?(camera.rotateX(.05),isup=true,isdown=false):(camera.rotateX(-.05),isup=false,isdown=true)});setTimeout(()=>clearInterval(i),200)})(), carCrashSound.pause(), carCrashSound.currentTime = 0, carCrashSound.play() } }));
             car.translateX(carShiftedType == "drive"? t : -t);
           });
           accelerateSound.pause();
