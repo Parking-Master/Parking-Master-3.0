@@ -12,6 +12,11 @@
       body {
         font-family: "Open Sans Light", Arial, Helvetica, sans-serif;
         overflow: hidden !important;
+        background-image: url(./images/skid.png);
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-color: #fff;
+        background-position-x: 15vw;
       }
       h1 {
         font-family: "GlacialIndifference";
@@ -20,6 +25,7 @@
         white-space: nowrap;
         letter-spacing: 15px;
         text-align: center;
+        color: #000;
       }
       h2 {
         font-family: "GlacialIndifference";
@@ -35,12 +41,11 @@
         border: none !important;
         outline: none !important;
         height: 1px;
-        width: 400px;
+        width: 27.77777777777778vw;
         background: #000;
-        margin-left: 13.5% !important;
+        left: 50% !important;
+        margin-left: -475px;
         margin-bottom: 100px;
-        display: inline-block;
-        margin-right: 1.5%;
       }
       button {
         position: relative;
@@ -55,6 +60,7 @@
         margin-left: 13.5%;
         margin-bottom: 50px;
         transition: transform .1s;
+        white-space: nowrap;
       }
       button:hover {
         transform: scale(1.1);
@@ -76,6 +82,8 @@
         color: #000;
         text-decoration: none;
         border-bottom: 1px solid currentColor;
+        filter: invert(1);
+        mix-blend-mode: difference;
       }
       .transition {
         position: absolute;
@@ -85,6 +93,7 @@
         background: #fff;
         border-radius: 100%;
         z-index: 9999;
+        object-fit: contain;
       }
       #multiplayer-frame {
         position: fixed;
@@ -114,10 +123,25 @@
         background: #fff;
         display: none;
       }
+      #vrs {
+        position: absolute;
+        width: 72%;
+        left: 50%;
+        margin-left: -36%;
+      }
+      * {
+        user-select: none !important;
+      }
     </style>
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
   </head>
   <body>
+    <style>body,html,*{cursor:none!important}#follower #circle1,#follower #circle2{cursor:none!important;position:absolute;border-radius:50%;height:0;width:0;margin-top:0;margin-left:0}*,body,html{cursor:none!important}#follower{position:absolute;top:50%;left:50%}#follower #circle1{-webkit-animation:2s infinite pulse;animation:2s infinite pulse;background:#fff}#follower #circle2{-webkit-animation:4s infinite pulse;animation:4s infinite pulse;background:rgba(0,0,0,.8)}@-moz-keyframes pulse{0%,100%{opacity:.2;height:1em;width:1em;margin-top:-.5em;margin-left:-.5em}50%{opacity:.9;height:3em;width:3em;margin-top:-1.5em;margin-left:-1.5em}}@-webkit-keyframes pulse{0%,100%{opacity:.2;height:1em;width:1em;margin-top:-.5em;margin-left:-.5em}50%{opacity:.9;height:3em;width:3em;margin-top:-1.5em;margin-left:-1.5em}}@-o-keyframes pulse{0%,100%{opacity:.2;height:1em;width:1em;margin-top:-.5em;margin-left:-.5em}50%{opacity:.9;height:3em;width:3em;margin-top:-1.5em;margin-left:-1.5em}}@keyframes pulse{0%,100%{opacity:.2;height:1em;width:1em;margin-top:-.5em;margin-left:-.5em}50%{opacity:.9;height:3em;width:3em;margin-top:-1.5em;margin-left:-1.5em}}</style>
+<div id="follower">
+  <div id="circle1"></div>
+  <div id="circle2"></div>
+</div>
+<script>(function(){var t,n,e,o;t=document.getElementById("follower"),document.getElementById("printout"),n=function(t){return t.clientX},e=function(t){return t.clientY},o=function(o){var u;return u={x:n(o),y:e(o)},t.style.top=u.y+"px",t.style.left=u.x+"px"},window.onmousemove=function(t){var n;return n=t,setTimeout((function(){return o(n)}),1)}}).call(this);</script>
     <h1>PARKING MASTER</h1>
     <h2>3.0</h2>
     <div id="link-container">
@@ -127,19 +151,17 @@
       <br>
       <a href="downloads">CONTACT</a>
     </div>
-    <hr>
-    <hr>
-    <br>
-    <hr>
-    <hr>
-    <button onclick="play()">PLAY</button>
-    <button style="margin-left:0;position:absolute;margin-right:13.5%!important;right:0!important">CUSTOMIZE</button>
-    <br>
-    <button onclick="multiplayer()">MULTIPLAYER</button>
-    <button style="margin-left:0;position:absolute;margin-right:13.5%!important;right:0!important">SUPPORT</button>
+    <img src="images/vrs.png" id="vrs">
+    <div style="margin-top:200px">
+      <button onclick="play()">PLAY</button>
+      <button style="margin-left:0;position:absolute;margin-right:13.5%!important;right:0!important">CUSTOMIZE</button>
+      <br>
+      <button onclick="multiplayer()">MULTIPLAYER</button>
+      <button style="margin-left:0;position:absolute;margin-right:13.5%!important;right:0!important">SUPPORT</button>
+    </div>
     <img class="transition" src="images/wheel.png" />
     <iframe src="multiplayer.html" id="multiplayer-frame"></iframe>
-    <iframe src="levels/level0.html" id="play-frame"></iframe>
+    <iframe src="" id="play-frame"></iframe>
     <script>
       function multiplayer() {
         let t = -1000;
@@ -156,6 +178,7 @@
         });
       }
       function play() {
+        document.querySelector("#play-frame").src = "levels/level0.html";
         document.querySelector("#play-frame").style.display = "block";
       }
       window.addEventListener("message", (e) => {
