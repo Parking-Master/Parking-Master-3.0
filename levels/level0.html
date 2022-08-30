@@ -110,6 +110,9 @@
         (new THREE.GLTFLoader).load("models/characters/driver.glb", (e) => {
           character = e.scene;
         });
+        new THREE.GLTFLoader().load("cars/ford_crown_victoria.destroyed.glb", (car) => {
+          window.destroyed_car = car.scene.children[0];
+        });
       });
       new THREE.GLTFLoader().load("maps/basic.glb", (map) => {
         window.map = map.scene.children[0].children[0];
@@ -128,6 +131,12 @@
       Notiflix.Notify.init({clickToClose:true,showOnlyTheLastOne:true,timeout:6000000,info:{background:"#fff",textColor:"#333",notiflixIconColor:"#333"}});
       carwasintheair = false;
       function crash() {
+        scene.remove(car);
+        destroyed_car.position.copy(car.position);
+        destroyed_car.rotation.copy(car.rotation);
+        destroyed_car.updateMatrix();
+        car = destroyed_car;
+        scene.add(car);
         (()=>{let isup=false,isdown=true;let i=setInterval(()=>{!isup?(camera.rotateX(.05),isup=true,isdown=false):(camera.rotateX(-.05),isup=false,isdown=true)});setTimeout(()=>clearInterval(i),200)})();
         (()=>{let x=new THREE.Mesh(new THREE.CircleGeometry(5,32),new THREE.MeshBasicMaterial({map:(new THREE.TextureLoader).load("https://fps5.ml/images/explosion.png"),side:THREE.DoubleSide,transparent:true}));let v=new THREE.SpotLight(0xffffff,4);v.position.copy(car.position),x.position.copy(car.position),x.rotation.copy(car.rotation),x.updateMatrix(),x.translateX(1),x.lookAt(camera.position),scene.add(x),v.lookAt(camera.position),scene.add(v);setTimeout(()=>{let f=setInterval(()=>{!(x.material.opacity<=0)?x.material.opacity+=-.1:(scene.remove(x),scene.remove(v),clearInterval(f))},10)},500);(()=>{let t=0;setInterval(()=>{if(!didCrashAfterCrash){t+=.001;car.rotateZ(.005);car.position.y+=-t}else{!didplaycrashsoundtwice&&(carCrashSound.pause(),carCrashSound.currentTime=0,carCrashSound.play(),didplaycrashsoundtwice=true)}})})()})();
         carCrashSound.play();
@@ -183,6 +192,9 @@
         }
         typeof map!="undefined"&&!didCrash&&(()=>{let r=collisionfollower;r.position.copy(car.position);r.rotation.copy(car.rotation);r.updateMatrix();r.translateY(1);(collision(r,map.children[8])||collision(r,map.children[9])||collision(r,map.children[10])||collision(r,map.children[11]))&&(crash(),didCrash=true)})();
         didCrash&&(()=>{let r=collisionfollower;r.position.copy(car.position);r.rotation.copy(car.rotation);r.updateMatrix();r.translateY(1);collision(collisionfollower,map.children[8])&&(didCrashAfterCrash=true)})();
+          (currentCamera == 2 && didCrash) && (swal({
+          text: "Rear camera is obstructed. Cannot view"
+        }), currentCamera = 3);
         renderer.render(scene, camera);
         requestAnimationFrame(animate);
       }
