@@ -87,21 +87,7 @@
         border-radius: 100%;
         z-index: 9999;
       }
-      #multiplayer-frame {
-        position: fixed;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        right: 0;
-        width: 100%;
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        border: none;
-        background: #fff;
-        display: none;
-      }
-      #play-frame {
+      #index-frame {
         position: fixed;
         left: 0;
         top: 0;
@@ -119,7 +105,7 @@
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
   </head>
   <body>
-    <h1>PARKING MASTER</h1>
+    <h1>MULTIPLAYER</h1>
     <h2>3.0</h2>
     <div id="link-container">
       <a href="downloads">DOWNLOAD</a>
@@ -133,48 +119,17 @@
     <br>
     <hr>
     <hr>
-    <button onclick="play()">PLAY</button>
-    <button style="margin-left:0;position:absolute;margin-right:13.5%!important;right:0!important">CUSTOMIZE</button>
+    <button>VIEW LOBBIES</button>
+    <button style="margin-left:0;position:absolute;margin-right:13.5%!important;right:0!important" onclick="index()">BACK</button>
     <br>
-    <button onclick="multiplayer()">MULTIPLAYER</button>
-    <button style="margin-left:0;position:absolute;margin-right:13.5%!important;right:0!important">SUPPORT</button>
+    <button onclick="createLobby()">CREATE LOBBY</button>
+    <button style="margin-left:0;position:absolute;margin-right:13.5%!important;right:0!important" onclick="location.reload()">REFRESH</button>
     <img class="transition" src="images/wheel.png" />
-    <iframe src="multiplayer.html" id="multiplayer-frame"></iframe>
-    <iframe src="levels/level0.html" id="play-frame"></iframe>
+    <iframe src="index.html" id="index-frame"></iframe>
     <script>
-      function multiplayer() {
-        let t = -1000;
-        let h = setInterval(() => {
-          if (t >= 1500) {
-            return document.querySelector(".transition").style.left = "-100%", document.querySelector(".transition").style.transform = "rotate(0deg)", clearInterval(h);
-          }
-          if (t >= 100) {
-            document.querySelector("#multiplayer-frame").style.display = "block";
-          }
-          t += 3;
-          document.querySelector(".transition").style.left = t + "px";
-          document.querySelector(".transition").style.transform = "rotate(" + (t - 3) + "deg)";
-        });
+      function index() {
+        top.postMessage("rmframe", "*");
       }
-      function play() {
-        document.querySelector("#play-frame").style.display = "block";
-      }
-      window.addEventListener("message", (e) => {
-        if (e.data == "rmframe") {
-          let t = -1000;
-          let h = setInterval(() => {
-            if (t >= 1500) {
-              return document.querySelector(".transition").style.left = "-100%", document.querySelector(".transition").style.transform = "rotate(0deg)", clearInterval(h);
-            }
-            if (t >= 100) {
-              document.querySelector("#multiplayer-frame").style.display = "none";
-            }
-            t += 3;
-            document.querySelector(".transition").style.left = t + "px";
-            document.querySelector(".transition").style.transform = "rotate(" + (t - 3) + "deg)";
-          });
-        }
-      });
     </script>
   </body>
 </html>

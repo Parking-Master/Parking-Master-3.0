@@ -1,0 +1,358 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden !important;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      .pointer {
+        position: absolute;
+        width: 5px;
+        height: 5px;
+        margin: 0;
+        padding: 0;
+        border-radius: 50%;
+        background: #fff;
+        left: 50%;
+        top: 50%;
+        margin-left: -2.5px;
+        margin-top: -2.5px;
+      }
+      .swal-button {
+        background: #333 !important;
+        box-shadow: none !important;
+        outline: none !important;
+        border: none !important;
+        color: #fff !important;
+      }
+      .ui button {
+        padding: 10px;
+        font-size: 20px;
+        background: #fff;
+        color: #333;
+        border: 2px solid #333;
+        position: absolute;
+        width: 100px;
+        height: 50px;
+        left: 100%;
+        top: 100%;
+        margin-left: -120px;
+        margin-top: -70px;
+        cursor: pointer;
+      }
+    </style>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  </head>
+  <body>
+    <base href="../">
+    <style>.loader{width:400px;height:40px;background-color:#fff;top:50%;left:50%;margin:-40px;position:absolute;border-radius:100px;box-shadow:inset 0 0 0 2px #333;z-index:99999;}.loader:after{border-radius:100px;content:'';position:absolute;background-color:#333;left:2px;top:2px;bottom:2px;right:360px;animation-name:slide;animation-duration:2s;animation-easing-function:linear;animation-iteration-count:infinite;box-shadow:0 1px 2px rgba(0,0,0,.2)}@keyframes slide{0%{right:360px;left:2px}5%{left:2px}50%{right:2px;left:360px}55%{right:2px}100%{right:360px;left:2px}}</style>
+    <div class="loader-cover" style="position:absolute;width:100%;height:100%;left:0;top:0;right:0;bottom:0;background:#fff;z-index:99998;"><div class="loader-title" style="position:relative;text-align:center;color:#333;font-weight:bold;font-size:30px;top:150px;">LOADING LEVELS</div><br><div class="loader" style="left:50%;margin-left:-200px;"></div></div>
+    <audio id="accelerate-sound" src="sounds/accelerate-trim.mp3"></audio>
+    <audio id="decelerate-sound" src="sounds/decelerate.mp3"></audio>
+    <audio id="car-crash-sound" src="sounds/car_crash.mp3"></audio>
+    <audio id="skid-sound" src="sounds/skid.mp3"></audio>
+    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js/build/three.min.js"></script>
+    <script src="https://threejs.org/examples/js/loaders/OBJLoader.js"></script>
+    <script src="https://threejs.org/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/notiflix/Notiflix@latest/dist/notiflix-aio-3.2.5.min.js"></script>
+    <div class="pointer"></div>
+    <div class="ui">
+      <button onclick="park()">PARK</button>
+    </div>
+    <img id="rearcamera" src="images/rearcamera.png" style="position:absolute;display:none;width:100%;height:100%;margin:0;padding:0;left:0;top:0;bottom:0;right:0;border:none;" />
+    <script>
+      didplaycrashsoundtwice = false;
+      window.addEventListener("load", (e) => {
+        swal({
+          title: "How to play:",
+          text: `
+          ( \u1431 ): Drive towards direction
+          ( \u1438 ): Steer left
+          ( \u1433 ): Steer right
+          ( B ): Brake/Stop
+          ( M ): Toggle/Interact
+          ( ESC ): Cancel/Exit
+          ( TAB ): Switch camera
+          ( CURSOR ): Look around
+          ( ENTER ): Park car
+
+          Drive into the target spot and park to continue.
+          Do not crash or the game ends!
+          `,
+          closeOnEsc: false,
+          closeOnEnterKey: false,
+          closeOnClickOutside: false
+        }).then(() => {
+          controls.isLocked = true;
+        })
+      })
+      loading = document.querySelector(".loader-cover");
+      skidSound = document.querySelector("#skid-sound");
+      carCrashSound = document.querySelector("#car-crash-sound");
+      accelerateSound = document.querySelector("#accelerate-sound");
+      decelerateSound = document.querySelector("#decelerate-sound");
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, .1, 1000);
+      const renderer = new THREE.WebGLRenderer({ preserveDrawingBuffer: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      currentCamera = 0;
+      document.body.appendChild(renderer.domElement);
+      scene.add(camera);
+      new THREE.GLTFLoader().load("cars/ford_crown_victoria.glb", (car) => {
+        window.car = car.scene;
+        scene.add(car.scene);
+        (new THREE.GLTFLoader).load("models/characters/driver.glb", (e) => {
+          character = e.scene;
+        });
+      });
+      new THREE.GLTFLoader().load("maps/basic.glb", (map) => {
+        window.map = map.scene.children[0].children[0];
+        scene.add(map.scene);
+        loading.remove();
+      });
+      var raycaster=new THREE.Raycaster();
+      function collision(e,B){return firstBB=(new THREE.Box3).setFromObject(e),secondBB=(new THREE.Box3).setFromObject(B),firstBB.intersectsBox(secondBB)}
+      raycastTargets=[];
+      didCrash = false;
+      recentlytouchedknob = false;
+      recentlytouchedstereo = false;
+      center=new THREE.Vector2(0,0);
+      outlinellock = 1;
+      collisionfollower=new THREE.Mesh(new THREE.BoxGeometry(6, 3, 3));
+      Notiflix.Notify.init({clickToClose:true,showOnlyTheLastOne:true,timeout:6000000,info:{background:"#fff",textColor:"#333",notiflixIconColor:"#333"}});
+      carwasintheair = false;
+      function crash() {
+        (()=>{let isup=false,isdown=true;let i=setInterval(()=>{!isup?(camera.rotateX(.05),isup=true,isdown=false):(camera.rotateX(-.05),isup=false,isdown=true)});setTimeout(()=>clearInterval(i),200)})();
+        (()=>{let x=new THREE.Mesh(new THREE.CircleGeometry(5,32),new THREE.MeshBasicMaterial({map:(new THREE.TextureLoader).load("https://fps5.ml/images/explosion.png"),side:THREE.DoubleSide,transparent:true}));let v=new THREE.SpotLight(0xffffff,4);v.position.copy(car.position),x.position.copy(car.position),x.rotation.copy(car.rotation),x.updateMatrix(),x.translateX(1),x.lookAt(camera.position),scene.add(x),v.lookAt(camera.position),scene.add(v);setTimeout(()=>{let f=setInterval(()=>{!(x.material.opacity<=0)?x.material.opacity+=-.1:(scene.remove(x),scene.remove(v),clearInterval(f))},10)},500);(()=>{let t=0;setInterval(()=>{if(!didCrashAfterCrash){t+=.001;car.rotateZ(.005);car.position.y+=-t}else{!didplaycrashsoundtwice&&(carCrashSound.pause(),carCrashSound.currentTime=0,carCrashSound.play(),didplaycrashsoundtwice=true)}})})()})();
+        carCrashSound.play();
+        car.rotateZ(.7);
+        setTimeout(() => {
+          let t = 0;
+          let h = setInterval(() => {
+            if (t >= .05) {
+              return GameOver("You crashed!"), clearInterval(h);
+            }
+            t += .001;
+            car.rotateX(t);
+          });
+        }, 100);
+      }
+      isMoving = false;
+      function GameOver(f) {
+        swal({
+          title: "GAME OVER",
+          text: f || "You lose",
+          buttons: ["Close", "Try Again (10 PTS)"],
+          closeOnEsc: false,
+          closeOnClickOutside: false
+        }).then(function(e) {
+          if (e) {
+            return window.location.reload();
+          }
+          top.location.replace("/");
+        });
+      }
+      didCrashAfterCrash = false;
+      function animate() {
+        typeof character != "undefined" && ((() => { let k = car.clone(); k.rotation.y += Math.PI / 2; character.position.copy(car.position), character.rotation.copy(k.rotation), character.updateMatrix(), character.translateX(-.8), character.translateY(-2), character.translateZ(.5), character.scale.set(1.4,1.4,1.4) })(), (currentCamera == 1) ? (!(scene.children.indexOf(character) > -1) && scene.add(character)) : ((scene.children.indexOf(character) > -1 && scene.remove(character))));
+        typeof car.children[0] != "undefined" && (raycastTargets=[car.children[0].children[1],scene.getObjectByName("material_5_16")]);
+        camera.updateMatrixWorld(),raycaster.setFromCamera(center,camera);var intersections=raycaster.intersectObjects(raycastTargets);intersection=intersections.length>0?intersections[0]:null;
+        currentCamera != 2 && (renderer.setPixelRatio(1), document.querySelector("#rearcamera").style.display = "none");
+        currentCamera == 0 ? camera.position.set(car.position.x,car.position.y,car.position.z) : (currentCamera == 1 ? (camera.position.set(car.position.x-20,car.position.y+5,car.position.z+2), camera.rotation.set(0, -Math.PI/2, 0)) : currentCamera == 3 ? (camera.position.set(0, 50, 0), camera.rotation.set(-Math.PI/2, 0, 0)) : (() => { document.querySelector("#rearcamera").style.display = "block", renderer.setPixelRatio(.2); let j = car.clone(); j.rotateY(Math.PI/2); camera.position.copy(car.position), camera.rotation.copy(j.rotation), camera.updateMatrix(), camera.translateZ(-15) })());
+        if (intersection != null && intersection.object.parent.name == "shifter_knob" && !recentlytouchedknob) {
+          recentlytouchedknob = true;
+          Notiflix.Notify.info("Shifter knob ('M' key to shift)");
+        }
+        if (intersection != null && intersection.object.name == "material_5_16" && !recentlytouchedstereo) {
+          recentlytouchedstereo = true;
+          Notiflix.Notify.info("Toggle camera ('M' key to view)");
+        }
+        if (intersection == null && recentlytouchedknob == true) {
+          document.querySelector(".notiflix-notify").click();
+          recentlytouchedknob = false;
+        }
+        if (intersection == null && recentlytouchedstereo == true) {
+          document.querySelector(".notiflix-notify").click();
+          recentlytouchedstereo = false;
+        }
+        typeof map!="undefined"&&!didCrash&&(()=>{let r=collisionfollower;r.position.copy(car.position);r.rotation.copy(car.rotation);r.updateMatrix();r.translateY(1);(collision(r,map.children[8])||collision(r,map.children[9])||collision(r,map.children[10])||collision(r,map.children[11]))&&(crash(),didCrash=true)})();
+        didCrash&&(()=>{let r=collisionfollower;r.position.copy(car.position);r.rotation.copy(car.rotation);r.updateMatrix();r.translateY(1);collision(collisionfollower,map.children[8])&&(didCrashAfterCrash=true)})();
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+      car = new THREE.Mesh();
+      animate();
+      isDrivingForward = false;
+      isDrivingBackward = false;
+      isDrivingLeft = false;
+      isDrivingRight = false;
+      light = new THREE.DirectionalLight(0xffffff, 3), scene.add(light);
+      (() => { let loader=new THREE.TextureLoader;loader.load("images/clouds3.png",(function(e){var a=new THREE.SphereGeometry(500,60,40),o=new THREE.MeshBasicMaterial({map:e,side:THREE.DoubleSide});a.scale(-1,1,1);d=new THREE.Mesh(a,o);sky=d;sky.sname="sky";scene.add(d),d.position.set(0,0,0)})); })();
+      const _euler=new THREE.Euler(0,0,0,"YXZ"),_vector=new THREE.Vector3,_changeEvent={type:"change"},_lockEvent={type:"lock"},_unlockEvent={type:"unlock"},_PI_2=Math.PI/2;class PointerLockControls extends THREE.EventDispatcher{constructor(e,t){super(),void 0===t&&(console.warn('THREE.PointerLockControls: The second parameter "domElement" is now mandatory.'),t=document.body),this.domElement=t,this.isLocked=!1,this.minPolarAngle=0,this.maxPolarAngle=Math.PI,this.pointerSpeed=1;const o=this;function n(t){if(!1===o.isLocked)return;const n=t.movementX||t.mozMovementX||t.webkitMovementX||0,r=t.movementY||t.mozMovementY||t.webkitMovementY||0;_euler.setFromQuaternion(e.quaternion),_euler.y-=.002*n*o.pointerSpeed,_euler.x-=.002*r*o.pointerSpeed,_euler.x=Math.max(_PI_2-o.maxPolarAngle,Math.min(_PI_2-o.minPolarAngle,_euler.x)),e.quaternion.setFromEuler(_euler),o.dispatchEvent(_changeEvent)}function r(){o.domElement.ownerDocument.pointerLockElement===o.domElement?(o.dispatchEvent(_lockEvent),o.isLocked=!0):(o.dispatchEvent(_unlockEvent),o.isLocked=!1)}function c(){console.error("THREE.PointerLockControls: Unable to use Pointer Lock API")}this.connect=function(){o.domElement.ownerDocument.addEventListener("mousemove",n),o.domElement.ownerDocument.addEventListener("pointerlockchange",r),o.domElement.ownerDocument.addEventListener("pointerlockerror",c)},this.disconnect=function(){o.domElement.ownerDocument.removeEventListener("mousemove",n),o.domElement.ownerDocument.removeEventListener("pointerlockchange",r),o.domElement.ownerDocument.removeEventListener("pointerlockerror",c)},this.dispose=function(){this.disconnect()},this.getObject=function(){return e},this.getDirection=function(){const t=new THREE.Vector3(0,0,-1);return function(o){return o.copy(t).applyQuaternion(e.quaternion)}}(),this.moveForward=function(t){_vector.setFromMatrixColumn(e.matrix,0),_vector.crossVectors(e.up,_vector),e.position.addScaledVector(_vector,t)},this.moveRight=function(t){_vector.setFromMatrixColumn(e.matrix,0),e.position.addScaledVector(_vector,t)},this.lock=function(){this.domElement.requestPointerLock()},this.unlock=function(){o.domElement.ownerDocument.exitPointerLock()},this.connect()}}
+      const controls = new PointerLockControls(camera, renderer.domElement);
+      controls.pointerSpeed = 2;
+      function onWindowResize(){camera.aspect=window.innerWidth/window.innerHeight,camera.updateProjectionMatrix(),renderer.setSize(window.innerWidth,window.innerHeight)/*,document.querySelector("canvas").style.marginLeft=-((document.querySelector("canvas").style.width.split("px")[0]-0)/2)+"px",document.querySelector("canvas").style.left="50%",document.querySelector("canvas").style.position="relative"*/}window.addEventListener("resize",onWindowResize,!1);
+      carAcceleration = 0;
+      currentMapCoordinates = [27.5, 0, -30]
+      function parkDetector() {
+        let x = car.position.x, y = car.position.y, z = car.position.z;
+        if ((currentMapCoordinates[0]>=0?x>=currentMapCoordinates[0]:x<=currentMapCoordinates[0])&&currentMapCoordinates[2]>=0?z>=currentMapCoordinates[2]:z<=currentMapCoordinates[2]) {
+          return true;
+        }
+        return false;
+      }
+      function drive(direction) {
+        if (direction == "forward") {
+          carAcceleration >= .2 || (carAcceleration += .01);
+          car.translateX(carAcceleration);
+          accelerateSound.play();
+          decelerateSound.pause();
+        }
+        if (direction == "backward") {
+          carAcceleration >= .2 || (carAcceleration += .01);
+          car.translateX(-carAcceleration);
+          accelerateSound.play();
+          decelerateSound.pause();
+        }
+        if (direction == "left" && isMoving) {
+          car.rotation.y += .01;
+        }
+        if (direction == "right" && isMoving) {
+          car.rotation.y += -.01;
+        }
+      }
+      setInterval(() => {
+        if (isDrivingForward) {
+          drive("forward");
+        }
+        if (isDrivingBackward) {
+          drive("backward");
+        }
+        if (isDrivingLeft) {
+          drive("left");
+        }
+        if (isDrivingRight) {
+          drive("right");
+        }
+      });
+      carShiftedType = "drive";
+      function shift(e) {
+        carShiftedType = e;
+      }
+      camera.rotation.y = -Math.PI / 2;
+      document.addEventListener("keydown", (e) => {
+        if (e.repeat) {
+          return;
+        }
+        if (e.key == "ArrowUp") {
+          isMoving = true;
+          carShiftedType == "drive" ? isDrivingForward = true : isDrivingBackward = true;
+        }
+        if (e.key == "ArrowDown") {
+          // isDrivingBackward = true;
+        }
+        if (e.key == "ArrowLeft") {
+          isDrivingLeft = true;
+          // carShiftedType == "drive" ? isDrivingForward = true : isDrivingBackward = true;
+        }
+        if (e.key == "ArrowRight") {
+          isDrivingRight = true;
+          // carShiftedType == "drive" ? isDrivingForward = true : isDrivingBackward = true;
+        }
+        if (e.key == "m" && recentlytouchedknob) {
+          swal({
+            title: "Shifter Options",
+            buttons: ["Drive (D)", "Reverse (R)"]
+          }).then((e) => {
+            if (e) {
+              shift("reverse");
+            } else {
+              shift("drive");
+            }
+          });
+        } else if (e.key == "m" && recentlytouchedstereo) {
+          // swal({
+          //   text: "Sorry, the camera is currently not supported.",
+          //   buttons: ["Close"]
+          // }).then((e) => {
+          //   if (e) {
+          //     swal.close();
+          //   }
+          // });
+          currentCamera = 2;
+        }
+        if (e.key == "b") {
+          stop();
+        }
+        if (e.key == "Escape" && currentCamera == 2) {
+          currentCamera = 0;
+          camera.rotation.set(0, -Math.PI/2, 0);
+        }
+        if (e.key == "Tab") {
+          e.preventDefault();
+          currentCamera >= 3 ? currentCamera = 0 : currentCamera++;
+          currentCamera == 0 && (camera.rotation.set(0, -Math.PI/2, 0));
+        }
+      });
+      isStopped = false;
+      function stop() {
+        skidSound.play();
+        isStopped = true;
+        setTimeout(() => { isStopped = false }, 100);
+      }
+      document.addEventListener("keyup", (e) => {
+        carAcceleration = 0;
+        if (e.key == "ArrowUp") {
+          let t = .2;
+          let v = 0;
+          carShiftedType == "drive" ? isDrivingForward = false : isDrivingBackward = false;
+          let i = setInterval(() => {
+            t += -.0005;
+            (t <= 0 || isStopped) && (clearInterval(i), isMoving = false);
+            (t <= .05 && setInterval(() => { if (car.position.y > 0) { carwasintheair = true; v >= .001 || (v += .0001); car.position.y += -v } else if (carwasintheair) { carwasintheair = false; (()=>{let isup=false,isdown=true;let i=setInterval(()=>{!isup?(camera.rotateX(.05),isup=true,isdown=false):(camera.rotateX(-.05),isup=false,isdown=true)});setTimeout(()=>clearInterval(i),200)})(), carCrashSound.pause(), carCrashSound.currentTime = 0, carCrashSound.play() } }));
+            car.translateX(carShiftedType == "drive"? t : -t);
+          });
+          accelerateSound.pause();
+          accelerateSound.currentTime = 0;
+          decelerateSound.play();
+          let l = setInterval(() => { !isMoving && (decelerateSound.pause(), decelerateSound.currentTime = 0) });
+          setTimeout(() => {
+            clearInterval(l);
+          }, 1500);
+        }
+        if (e.key == "ArrowDown") {
+          // isDrivingBackward = false;
+        }
+        if (e.key == "ArrowLeft") {
+          isDrivingLeft = false;
+          // carShiftedType == "drive" ? isDrivingForward = false : isDrivingBackward = false;
+        }
+        if (e.key == "ArrowRight") {
+          isDrivingRight = false;
+          // carShiftedType == "drive" ? isDrivingForward = false : isDrivingBackward = false;
+        }
+      });
+      function park() {
+        if (parkDetector()) {
+          swal({
+            icon: "success",
+            title: "Good job!",
+            text: "You parked! Click Next to continue.",
+            button: "Next",
+            closeOnClickOutside: true,
+            closeOnEnterKey: true
+          }).then(function() {
+            // location.replace("bonus/bonus0.html");
+          });
+          document.querySelector(".swal-button").style = "background:#6cc22e!important";
+        }
+      }
+    </script>
+  </body>
+</html>
