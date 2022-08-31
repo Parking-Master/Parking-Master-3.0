@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personalize your profile and account</title>
+    <script type="text/javascript" src="https://npmcdn.com/parse/dist/parse.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/Parking-Master/Simple-Alert@latest/simplealert.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      input {
+        position: relative;
+        width: 50%;
+        height: 20px;
+        padding: 5px;
+        left: 50%;
+        margin-left: -25%;
+        margin-bottom: 50px;
+        outline: none !important;
+        border: 2px solid #333;
+      }
+      input:read-only {
+        cursor: pointer;
+      }
+      h1 {
+        text-align: center;
+        color: #333;
+        margin-top: 100px;
+      }
+      button#submit {
+        position: relative;
+        color: #eee;
+        background: #333;
+        height: 30px;
+        padding: 5px;
+        display: inline-flex;
+        text-align: center;
+        justify-content: center;
+        align-items: center;
+        border: none !important;
+        outline: none !important;
+        width: 50%;
+        left: 50%;
+        margin-left: -25%;
+        cursor: default;
+      }
+      button#submit:hover {
+        background: #444;
+      }
+      p {
+        margin-bottom: 100px;
+      }
+      a {
+        color: #333;
+      }
+      #NotiflixNotifyWrap {
+        box-shadow: 0 0 5px 2px #ddd;
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/gh/notiflix/Notiflix@latest/dist/notiflix-aio-3.2.5.min.js"></script>
+  </head>
+  <body>
+    <h1 style="position:relative;width:50%;display:inline-flex;align-items:center;text-align:center;justify-content:center;left:50%;margin-left:-25%;">Account info</h1>
+    <p style="text-align:center">User "<span id="username"></span>"</p>
+    <label for="username" style="position:relative;left:50%;margin-left:-25%;">Username</label>
+    <br>
+    <input id="username" minlength="3" type="text" readonly onclick="this.readOnly&&Notiflix.Notify.info('You now are editing your username. \'Esc\' to cancel'),this.readOnly=false,this.value=localStorage['username']" />
+    <br>
+    <label for="password" style="position:relative;left:50%;margin-left:-25%;">Password</label>
+    <br>
+    <input id="password" type="text" readonly placeholder="(Password is hidden)" onclick="this.readOnly&&Notiflix.Notify.info('You now are editing your password. \'Esc\' to cancel');this.readOnly=false,this.value=localStorage['password']" />
+    <br>
+    <button onclick="save()" id="submit">Save</button>
+    <script>
+      Parse.initialize("sixz0SUXueXB5ag6LNjX7RcHk3KAQI8UCA3shKwh","09yqaddyyjykuIyeBHlNyTTnnXTS73ZryQNaB0vp"),Parse.serverURL="https://parseapi.back4app.com/";
+      Notiflix.Notify.init({clickToClose:true,showOnlyTheLastOne:true,timeout:4000,info:{shadow:true,background:"#fff",textColor:"#333",notiflixIconColor:"#333"}});
+      for (let i = 0; i < document.querySelectorAll("#username").length; i++) {
+        !(document.querySelectorAll("#username")[i].value != undefined) ? document.querySelectorAll("#username")[i].textContent = localStorage["username"] : document.querySelectorAll("#username")[i].value = localStorage["username"];
+      }
+      document.addEventListener("keydown", (e) => {
+        if (e.key == "Escape") {
+          document.querySelector("input#username").readOnly = true;
+          document.querySelector("input#username").value = localStorage["username"];
+          document.querySelector("input#password").readOnly = true;
+          document.querySelector("input#password").value = "";
+        }
+      });
+      function save() {
+        new Parse.Query(Parse.Object.extend("User")).find("objectId").then((e=>{for(let t=0;t<e.length;t++){let r=new Parse.User;r.set("objectId",e[t].id),r.get("username")==localStorage.username&&(()=>{
+            let user = r;
+            document.querySelector("input#username").value.trim() && document.querySelector("input#username").value.trim() != localStorage["username"] && (user.set("username", document.querySelector("input#username").value.trim()), localStorage.setItem("username", document.querySelector("input#username").value.trim()));
+            document.querySelector("input#password").value.trim() && document.querySelector("input#password").value.trim() != localStorage["password"] && (user.set("password", document.querySelector("input#password").value.trim()), localStorage.setItem("password", document.querySelector("input#password").value.trim()));
+            user.save().then((e) => {
+              console.log(e);
+            });
+          })();
+        }}));
+      }
+    </script>
+  </body>
+</html>

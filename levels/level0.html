@@ -67,6 +67,7 @@
     </div>
     <img id="rearcamera" src="images/rearcamera.png" style="position:absolute;display:none;width:100%;height:100%;margin:0;padding:0;left:0;top:0;bottom:0;right:0;border:none;" />
     <script>
+      performance = localStorage["performance"] || 100;
       didplaycrashsoundtwice = false;
       window.addEventListener("load", (e) => {
         swal({
@@ -107,12 +108,12 @@
       new THREE.GLTFLoader().load("cars/ford_crown_victoria.glb", (car) => {
         window.car = car.scene;
         scene.add(car.scene);
-        (new THREE.GLTFLoader).load("models/characters/driver.glb", (e) => {
+        performance >= 50 ? (new THREE.GLTFLoader).load("models/characters/driver.glb", (e) => {
           character = e.scene;
-        });
-        new THREE.GLTFLoader().load("cars/ford_crown_victoria.destroyed.glb", (car) => {
+        }) : character = new THREE.Mesh();
+        performance >= 80 ? new THREE.GLTFLoader().load("cars/ford_crown_victoria.destroyed.glb", (car) => {
           window.destroyed_car = car.scene.children[0];
-        });
+        }) : window.destroyed_car = window.car;
       });
       new THREE.GLTFLoader().load("maps/basic.glb", (map) => {
         window.map = map.scene.children[0].children[0];
@@ -169,19 +170,20 @@
       }
       didCrashAfterCrash = false;
       function animate() {
-        typeof character != "undefined" && ((() => { let k = car.clone(); k.rotation.y += Math.PI / 2; character.position.copy(car.position), character.rotation.copy(k.rotation), character.updateMatrix(), character.translateX(-.8), character.translateY(-2), character.translateZ(.5), character.scale.set(1.4,1.4,1.4) })(), (currentCamera == 1) ? (!(scene.children.indexOf(character) > -1) && scene.add(character)) : ((scene.children.indexOf(character) > -1 && scene.remove(character))));
-        typeof car.children[0] != "undefined" && (raycastTargets=[car.children[0].children[1],scene.getObjectByName("material_5_16")]);
+        performance >= 50 && (typeof character != "undefined" && ((() => { let k = car.clone(); k.rotation.y += Math.PI / 2; character.position.copy(car.position), character.rotation.copy(k.rotation), character.updateMatrix(), character.translateX(-.8), character.translateY(-2), character.translateZ(.5), character.scale.set(1.4,1.4,1.4) })(), (currentCamera == 1) ? (!(scene.children.indexOf(character) > -1) && scene.add(character)) : ((scene.children.indexOf(character) > -1 && scene.remove(character)))));
+        typeof car.children[0] != "undefined" && (raycastTargets=[car.children[0].children[1]]);
         camera.updateMatrixWorld(),raycaster.setFromCamera(center,camera);var intersections=raycaster.intersectObjects(raycastTargets);intersection=intersections.length>0?intersections[0]:null;
-        currentCamera != 2 && (renderer.setPixelRatio(1), document.querySelector("#rearcamera").style.display = "none");
+        currentCamera != 2 && ((performance >= 50 ? renderer.setPixelRatio(1) : renderer.setPixelRatio(((("."+((performance-0)+2).toString())-0).toFixed(1)-0))), document.querySelector("#rearcamera").style.display = "none");
         currentCamera == 0 ? camera.position.set(car.position.x,car.position.y,car.position.z) : (currentCamera == 1 ? (camera.position.set(car.position.x-20,car.position.y+5,car.position.z+2), camera.rotation.set(0, -Math.PI/2, 0)) : currentCamera == 3 ? (camera.position.set(0, 50, 0), camera.rotation.set(-Math.PI/2, 0, 0)) : (() => { document.querySelector("#rearcamera").style.display = "block", renderer.setPixelRatio(.2); let j = car.clone(); j.rotateY(Math.PI/2); camera.position.copy(car.position), camera.rotation.copy(j.rotation), camera.updateMatrix(), camera.translateZ(-15) })());
         if (intersection != null && intersection.object.parent.name == "shifter_knob" && !recentlytouchedknob) {
           recentlytouchedknob = true;
           Notiflix.Notify.info("Shifter knob ('M' key to shift)");
         }
-        if (intersection != null && intersection.object.name == "material_5_16" && !recentlytouchedstereo) {
+        performance >= 20 && (() => { if (intersection != null && intersection.object.name == "material_5_16" && !recentlytouchedstereo) {
           recentlytouchedstereo = true;
           Notiflix.Notify.info("Toggle camera ('M' key to view)");
         }
+        })();
         if (intersection == null && recentlytouchedknob == true) {
           document.querySelector(".notiflix-notify").click();
           recentlytouchedknob = false;
