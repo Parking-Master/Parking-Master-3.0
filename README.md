@@ -1,11 +1,14 @@
 # <img alt="Favicon" src="favicon.ico" width="24" />&nbsp;&nbsp;Parking Master 3.0
 Fully customizable, responsive game featuring a beautiful 3d experience, along with a custom performance scale.<br>
-Parking Master 3.0: The all-new 3d Parking Master. The fixed version of all the other Parking Master games.
+Parking Master 3.0: The all-new 3d Parking Master. The fixed version of all the other Parking Master games.<br>
+**Note: This project is still in production. Some features may be broken, unfinished or unavailable for now.**
+
+\< \< [website url coming soon] \> \>
 
 ## What is Parking Master 3.0?
 Remember that old Parking Master? Parking Master 1.0? It's the oldest Parking Master ever. Released August 1st, 2021 10:00 AM.<br>
 It's even still available to play: [`parkingmaster.w3spaces.com`](https://parkingmaster.w3spaces.com) (If you're new check it out!)<br>
-For more information on this game go to `https://github.com/Parking-Master/Parking-Master`.
+For more information on this game go to [`https://github.com/Parking-Master/Parking-Master`](https://github.com/Parking-Master/Parking-Master).
 
 It went from this (1.0):
 <img src="https://user-images.githubusercontent.com/88283567/164757620-85fd5706-5ef0-4214-882f-1706ae7071e2.png">
@@ -56,3 +59,31 @@ v3.0
 
 Historic site at [`old.parkingmaster.tk`](https://old.parkingmaster.tk)
 </details>
+<hr>
+<h2>Credits</h2>
+A list of items that helped make Parking Master 3.0 possible.
+
+##### SweetAlert \> https://sweetalert.js.org
+##### TippyJS \> https://atomiks.github.io/tippyjs
+##### SecurityJS.128 \> https://parking-master.github.io/SecurityJS.128
+##### Parking-Master \> https://parkingmaster.w3spaces.com
+##### Canva \> https://www.canva.com
+##### Gametime.js \> https://gametime.js.org
+##### Back4App \> https://www.back4app.com
+##### Parse API \> https://parse-dashboard.back4app.com
+##### Node.js \> https://www.nodejs.org/en
+##### Google reCaptcha \> https://developers.google.com/recaptcha
+##### W3Schools Spaces \> https://spaces.w3schools.com
+##### ElectronJS \> https://electronjs.org
+##### Three.js \> https://threejs.org
+##### PubNub \> https://www.pubnub.com
+___
+## Support & Contribution
+Anyone can support this project by opening an issue<br>for bug details, feedback, and even your own opinion!
+
+Leave an idea in the "Issues" section and it may be<br>available on Parking Master 3.0 one day!
+
+Send us an email for a any other purposes: __parkingmaster@email.com__
+
+## License
+Parking Master and this project are licensed under the [MIT license](LICENSE).
