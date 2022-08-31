@@ -1,4 +1,4 @@
-# Parking Master 3.0
+# <img alt="Favicon" src="favicon.ico" width="24" />&nbsp;&nbsp;Parking Master 3.0
 Fully customizable, responsive game featuring a beautiful 3d experience, along with a custom performance scale.<br>
 Parking Master 3.0: The all-new 3d Parking Master. The fixed version of all the other Parking Master games.
 
