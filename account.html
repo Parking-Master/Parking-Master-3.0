@@ -10,7 +10,7 @@
       body {
         font-family: Arial, Helvetica, sans-serif;
       }
-      input {
+      input:not([type="file"]) {
         position: relative;
         width: 50%;
         height: 20px;
@@ -58,6 +58,12 @@
       #NotiflixNotifyWrap {
         box-shadow: 0 0 5px 2px #ddd;
       }
+      .swal-button {
+        background: #333 !important;
+        box-shadow: none !important;
+        color: #fff !important;
+        width: 100% !important;
+      }
     </style>
     <script src="https://cdn.jsdelivr.net/gh/notiflix/Notiflix@latest/dist/notiflix-aio-3.2.5.min.js"></script>
   </head>
@@ -73,8 +79,56 @@
     <input id="password" type="text" readonly placeholder="(Password is hidden)" onclick="this.readOnly&&Notiflix.Notify.info('You now are editing your password. \'Esc\' to cancel');this.readOnly=false,this.value=localStorage['password']" />
     <br>
     <button onclick="save()" id="submit">Save</button>
+    <br>
+    <br>
+    <button onclick="picture()" id="submit">Profile Picture</button>
     <script>
       Parse.initialize("sixz0SUXueXB5ag6LNjX7RcHk3KAQI8UCA3shKwh","09yqaddyyjykuIyeBHlNyTTnnXTS73ZryQNaB0vp"),Parse.serverURL="https://parseapi.back4app.com/";
+      function picture() {
+        function getBase64(file, callback) {
+          var reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = function() {
+            callback(reader.result);
+          };
+          reader.onerror = function (error) {
+            throw new Error(error);
+          };
+        }
+        let container = document.createElement("div");
+        container.innerHTML = `
+        <input type="file">
+        `;
+        new Parse.Query(Parse.Object.extend("User")).find("objectId").then((e=>{for(let t=0;t<e.length;t++){let r=new Parse.User;r.set("objectId",e[t].id),r.get("username")==localStorage.username&&(()=>{
+        let user = r;
+        swal({
+          icon: user.get("profilePicture"),
+          title: "Set profile picture",
+          text: "Upload a custom image",
+          button: "Save",
+          content: container
+        }).then((e) => {
+          localStorage.setItem("performance", document.querySelector(".swal-content").querySelector("input").value);
+          let file = document.querySelector(".swal-content").querySelector("input").files[0];
+          getBase64(file, (image) => {
+            document.querySelector(".swal-icon").querySelector("img").src = image;
+            new Parse.Query(Parse.Object.extend("User")).find("objectId").then((e=>{for(let t=0;t<e.length;t++){let r=new Parse.User;r.set("objectId",e[t].id),r.get("username")==localStorage.username&&(()=>{
+              let user = r;
+              user.set("profilePicture", image);
+              user.save().then((e) => {
+                console.log(e);
+              });
+            })();
+          }}));
+          });
+        });
+        container.querySelector("input").onchange = () => {
+          getBase64(document.querySelector(".swal-content").querySelector("input").files[0], (e) => { document.querySelector(".swal-icon").querySelector("img").src = e });
+        };
+        document.querySelector(".swal-icon").style.width = "25%";
+      })();
+      }}));
+      }
       Notiflix.Notify.init({clickToClose:true,showOnlyTheLastOne:true,timeout:4000,info:{shadow:true,background:"#fff",textColor:"#333",notiflixIconColor:"#333"}});
       for (let i = 0; i < document.querySelectorAll("#username").length; i++) {
         !(document.querySelectorAll("#username")[i].value != undefined) ? document.querySelectorAll("#username")[i].textContent = localStorage["username"] : document.querySelectorAll("#username")[i].value = localStorage["username"];
