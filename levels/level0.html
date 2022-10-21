@@ -107,7 +107,7 @@
       scene.add(camera);
       new THREE.GLTFLoader().load("cars/ford_crown_victoria.glb", (car) => {
         window.car = car.scene;
-        car.scene.rotation.order = "YXZ";
+        car.rotation.order = "YXZ";
         scene.add(car.scene);
         performance >= 50 ? (new THREE.GLTFLoader).load("models/characters/driver.glb", (e) => {
           character = e.scene;
