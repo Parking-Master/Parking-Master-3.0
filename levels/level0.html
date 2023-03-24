@@ -57,9 +57,8 @@
     <audio id="decelerate-sound" src="sounds/decelerate.mp3"></audio>
     <audio id="car-crash-sound" src="sounds/car_crash.mp3"></audio>
     <audio id="skid-sound" src="sounds/skid.mp3"></audio>
-    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js/build/three.min.js"></script>
-    <script src="https://threejs.org/examples/js/loaders/OBJLoader.js"></script>
-    <script src="https://threejs.org/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://fps3.ml/js/three.min.js"></script>
+    <script src="https://fps3.ml/js/GLTFLoader.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/notiflix/Notiflix@latest/dist/notiflix-aio-3.2.5.min.js"></script>
     <div class="pointer"></div>
     <div class="ui">
@@ -91,8 +90,8 @@
           closeOnClickOutside: false
         }).then(() => {
           controls.isLocked = true;
-        })
-      })
+        });
+      });
       loading = document.querySelector(".loader-cover");
       skidSound = document.querySelector("#skid-sound");
       carCrashSound = document.querySelector("#car-crash-sound");
@@ -100,12 +99,20 @@
       decelerateSound = document.querySelector("#decelerate-sound");
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, .1, 1000);
-      const renderer = new THREE.WebGLRenderer({ preserveDrawingBuffer: true });
+      camera.fov = 60;
+      camera.updateProjectionMatrix();
+      const renderer = new THREE.WebGLRenderer({ preserveDrawingBuffer: true, antialias: true });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.VSMShadowMap;
+      renderer.outputEncoding = THREE.sRGBEncoding;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.setSize(window.innerWidth, window.innerHeight);
       currentCamera = 0;
       document.body.appendChild(renderer.domElement);
       scene.add(camera);
-      new THREE.GLTFLoader().load("cars/ford_crown_victoria.glb", (car) => {
+      new THREE.GLTFLoader().load("models/vehicles/mini_cooper.glb", (car) => {
         window.car = car.scene;
         scene.add(car.scene);
         performance >= 50 ? (new THREE.GLTFLoader).load("models/characters/driver.glb", (e) => {
@@ -115,21 +122,20 @@
           window.destroyed_car = car.scene.children[0];
         }) : window.destroyed_car = window.car;
       });
-      new THREE.GLTFLoader().load("maps/basic.glb", (map) => {
-        window.map = map.scene.children[0].children[0];
+      new THREE.GLTFLoader().load("models/maps/level0.glb", (map) => {
+        window.map = map.scene;
         scene.add(map.scene);
         loading.remove();
       });
-      var raycaster=new THREE.Raycaster();
-      function collision(e,B){return firstBB=(new THREE.Box3).setFromObject(e),secondBB=(new THREE.Box3).setFromObject(B),firstBB.intersectsBox(secondBB)}
-      raycastTargets=[];
+      let raycaster = new THREE.Raycaster();
+      function collision(e,B){return false}
+      raycastTargets = [];
       didCrash = false;
-      recentlytouchedknob = false;
       recentlytouchedstereo = false;
-      center=new THREE.Vector2(0,0);
+      center = new THREE.Vector2(0,0);
       outlinellock = 1;
       collisionfollower=new THREE.Mesh(new THREE.BoxGeometry(6, 3, 3));
-      Notiflix.Notify.init({clickToClose:true,showOnlyTheLastOne:true,timeout:6000000,info:{background:"#fff",textColor:"#333",notiflixIconColor:"#333"}});
+      Notiflix.Notify.init({clickToClose:true,showOnlyTheLastOne:true,timeout:2000,info:{background:"#fff",textColor:"#333",notiflixIconColor:"#333"}});
       carwasintheair = false;
       function crash() {
         scene.remove(car);
@@ -171,25 +177,44 @@
       didCrashAfterCrash = false;
       function animate() {
         performance >= 50 && (typeof character != "undefined" && ((() => { let k = car.clone(); k.rotation.y += Math.PI / 2; character.position.copy(car.position), character.rotation.copy(k.rotation), character.updateMatrix(), character.translateX(-.8), character.translateY(-2), character.translateZ(.5), character.scale.set(1.4,1.4,1.4) })(), (currentCamera == 1) ? (!(scene.children.indexOf(character) > -1) && scene.add(character)) : ((scene.children.indexOf(character) > -1 && scene.remove(character)))));
-        typeof car.children[0] != "undefined" && (raycastTargets=[car.children[0].children[1]]);
-        camera.updateMatrixWorld(),raycaster.setFromCamera(center,camera);var intersections=raycaster.intersectObjects(raycastTargets);intersection=intersections.length>0?intersections[0]:null;
-        currentCamera != 2 && ((performance >= 50 ? renderer.setPixelRatio(1) : renderer.setPixelRatio(((("."+((performance-0)+2).toString())-0).toFixed(1)-0))), document.querySelector("#rearcamera").style.display = "none");
-        currentCamera == 0 ? camera.position.set(car.position.x,car.position.y,car.position.z) : (currentCamera == 1 ? (camera.position.set(car.position.x-20,car.position.y+5,car.position.z+2), camera.rotation.set(0, -Math.PI/2, 0)) : currentCamera == 3 ? (camera.position.set(0, 50, 0), camera.rotation.set(-Math.PI/2, 0, 0)) : (() => { document.querySelector("#rearcamera").style.display = "block", renderer.setPixelRatio(.2); let j = car.clone(); j.rotateY(Math.PI/2); camera.position.copy(car.position), camera.rotation.copy(j.rotation), camera.updateMatrix(), camera.translateZ(-15) })());
-        if (intersection != null && intersection.object.parent.name == "shifter_knob" && !recentlytouchedknob) {
-          recentlytouchedknob = true;
-          Notiflix.Notify.info("Shifter knob ('M' key to shift)");
+        typeof car.getObjectByName("C-Shifter") != "undefined" && (raycastTargets.indexOf(car.getObjectByName("C-Shifter")) > -1 || raycastTargets.push(car.getObjectByName("C-Shifter")));
+        typeof car.getObjectByName("C-Stereo") != "undefined" && (raycastTargets.indexOf(car.getObjectByName("C-Stereo")) > -1 || raycastTargets.push(car.getObjectByName("C-Stereo")));
+        camera.updateMatrixWorld();
+        raycaster.setFromCamera(center, camera);
+        let intersections = raycaster.intersectObjects(raycastTargets);
+        intersection = intersections.length > 0 ? intersections[0] : null;
+        if (currentCamera != 2) {
+          document.querySelector("#rearcamera").style.display = "none";
+          renderer.setPixelRatio(window.devicePixelRatio);
         }
-        performance >= 20 && (() => { if (intersection != null && intersection.object.name == "material_5_16" && !recentlytouchedstereo) {
-          recentlytouchedstereo = true;
-          Notiflix.Notify.info("Toggle camera ('M' key to view)");
+        if (currentCamera == 0) {
+          camera.position.set(car.position.x, car.position.y, car.position.z);
+        } else if (currentCamera == 1) {
+          camera.position.copy(car.position);
+          camera.rotation.copy(car.rotation);
+          camera.rotateY(-Math.PI / 2);
+          camera.translateZ(20);
+          camera.translateY(10);
+          camera.lookAt(car.position);
+        } else if (currentCamera == 3) {
+          camera.position.set(0, 50, 0);
+          camera.rotation.set(-Math.PI / 2, 0, 0);
+        } else {
+          document.querySelector("#rearcamera").style.display = "block";
+          renderer.setPixelRatio(.2);
+          let j = car.clone();
+          j.rotateY(Math.PI / 2);
+          camera.position.copy(car.position);
+          camera.rotation.copy(j.rotation);
+          camera.updateMatrix();
+          camera.translateZ(-15);
         }
-        })();
-        if (intersection == null && recentlytouchedknob == true) {
-          document.querySelector(".notiflix-notify").click();
-          recentlytouchedknob = false;
+        if (intersection != null && intersection.object.name == "C-Shifter") {
+          (document.querySelector("#NotiflixNotifyWrap") && document.querySelector("#NotiflixNotifyWrap").textContent.includes("Shifter")) || Notiflix.Notify.info("Shifter knob ('M' key to shift)");
+        } else if (intersection != null && intersection.object.name == "C-Stereo") {
+          (document.querySelector("#NotiflixNotifyWrap") && document.querySelector("#NotiflixNotifyWrap").textContent.includes("Toggle")) || Notiflix.Notify.info("Toggle camera ('M' key to view)");
         }
         if (intersection == null && recentlytouchedstereo == true) {
-          document.querySelector(".notiflix-notify").click();
           recentlytouchedstereo = false;
         }
         typeof map!="undefined"&&!didCrash&&(()=>{let r=collisionfollower;r.position.copy(car.position);r.rotation.copy(car.rotation);r.updateMatrix();r.translateY(1);(collision(r,map.children[8])||collision(r,map.children[9])||collision(r,map.children[10])||collision(r,map.children[11]))&&(crash(),didCrash=true)})();
@@ -206,7 +231,20 @@
       isDrivingBackward = false;
       isDrivingLeft = false;
       isDrivingRight = false;
-      light = new THREE.DirectionalLight(0xffffff, 3), scene.add(light);
+      directionalLight = new THREE.DirectionalLight(0xffffff, 3);
+      scene.add(directionalLight);
+      directionalLight.position.set(-5, 25, -1);
+      directionalLight.castShadow = true;
+      directionalLight.shadow.camera.near = 0.01;
+      directionalLight.shadow.camera.far = 500;
+      directionalLight.shadow.camera.right = 30;
+      directionalLight.shadow.camera.left = -30;
+      directionalLight.shadow.camera.top = 30;
+      directionalLight.shadow.camera.bottom = -30;
+      directionalLight.shadow.mapSize.width = 1024;
+      directionalLight.shadow.mapSize.height = 1024;
+      directionalLight.shadow.radius = 4;
+      directionalLight.shadow.bias = -0.00006;
       (() => { let loader=new THREE.TextureLoader;loader.load("images/clouds3.png",(function(e){var a=new THREE.SphereGeometry(500,60,40),o=new THREE.MeshBasicMaterial({map:e,side:THREE.DoubleSide});a.scale(-1,1,1);d=new THREE.Mesh(a,o);sky=d;sky.sname="sky";scene.add(d),d.position.set(0,0,0)})); })();
       const _euler=new THREE.Euler(0,0,0,"YXZ"),_vector=new THREE.Vector3,_changeEvent={type:"change"},_lockEvent={type:"lock"},_unlockEvent={type:"unlock"},_PI_2=Math.PI/2;class PointerLockControls extends THREE.EventDispatcher{constructor(e,t){super(),void 0===t&&(console.warn('THREE.PointerLockControls: The second parameter "domElement" is now mandatory.'),t=document.body),this.domElement=t,this.isLocked=!1,this.minPolarAngle=0,this.maxPolarAngle=Math.PI,this.pointerSpeed=1;const o=this;function n(t){if(!1===o.isLocked)return;const n=t.movementX||t.mozMovementX||t.webkitMovementX||0,r=t.movementY||t.mozMovementY||t.webkitMovementY||0;_euler.setFromQuaternion(e.quaternion),_euler.y-=.002*n*o.pointerSpeed,_euler.x-=.002*r*o.pointerSpeed,_euler.x=Math.max(_PI_2-o.maxPolarAngle,Math.min(_PI_2-o.minPolarAngle,_euler.x)),e.quaternion.setFromEuler(_euler),o.dispatchEvent(_changeEvent)}function r(){o.domElement.ownerDocument.pointerLockElement===o.domElement?(o.dispatchEvent(_lockEvent),o.isLocked=!0):(o.dispatchEvent(_unlockEvent),o.isLocked=!1)}function c(){console.error("THREE.PointerLockControls: Unable to use Pointer Lock API")}this.connect=function(){o.domElement.ownerDocument.addEventListener("mousemove",n),o.domElement.ownerDocument.addEventListener("pointerlockchange",r),o.domElement.ownerDocument.addEventListener("pointerlockerror",c)},this.disconnect=function(){o.domElement.ownerDocument.removeEventListener("mousemove",n),o.domElement.ownerDocument.removeEventListener("pointerlockchange",r),o.domElement.ownerDocument.removeEventListener("pointerlockerror",c)},this.dispose=function(){this.disconnect()},this.getObject=function(){return e},this.getDirection=function(){const t=new THREE.Vector3(0,0,-1);return function(o){return o.copy(t).applyQuaternion(e.quaternion)}}(),this.moveForward=function(t){_vector.setFromMatrixColumn(e.matrix,0),_vector.crossVectors(e.up,_vector),e.position.addScaledVector(_vector,t)},this.moveRight=function(t){_vector.setFromMatrixColumn(e.matrix,0),e.position.addScaledVector(_vector,t)},this.lock=function(){this.domElement.requestPointerLock()},this.unlock=function(){o.domElement.ownerDocument.exitPointerLock()},this.connect()}}
       const controls = new PointerLockControls(camera, renderer.domElement);
@@ -279,7 +317,7 @@
           isDrivingRight = true;
           // carShiftedType == "drive" ? isDrivingForward = true : isDrivingBackward = true;
         }
-        if (e.key == "m" && recentlytouchedknob) {
+        if (e.key == "m" && intersection.object.name == "C-Shifter") {
           swal({
             title: "Shifter Options",
             buttons: ["Drive (D)", "Reverse (R)"]
@@ -290,15 +328,7 @@
               shift("drive");
             }
           });
-        } else if (e.key == "m" && recentlytouchedstereo) {
-          // swal({
-          //   text: "Sorry, the camera is currently not supported.",
-          //   buttons: ["Close"]
-          // }).then((e) => {
-          //   if (e) {
-          //     swal.close();
-          //   }
-          // });
+        } else if (e.key == "m" && intersection.object.name == "C-Stereo") {
           currentCamera = 2;
         }
         if (e.key == "b") {
@@ -367,6 +397,9 @@
           document.querySelector(".swal-button").style = "background:#6cc22e!important";
         }
       }
+      setInterval(() => {
+        scene.traverse(x => (x.castShadow = true, x.receiveShadow = true));
+      });
     </script>
   </body>
 </html>
