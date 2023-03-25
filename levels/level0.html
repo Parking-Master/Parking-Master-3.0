@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -122,19 +121,60 @@
           window.destroyed_car = car.scene.children[0];
         }) : window.destroyed_car = window.car;
       });
+      parkingStatus = {
+        space: null,
+        valid: false
+      };
       new THREE.GLTFLoader().load("models/maps/level0.glb", (map) => {
-        window.map = map.scene;
-        scene.add(map.scene);
+        map = map.scene;
+        window.map = map;
+        scene.add(map);
         loading.remove();
+        let spaces = { reserved: [], valid: [] };
+        map.traverse(x => {
+          if (x.name.startsWith("ParkingSpaceCollider")) {
+            if (x.children[0].name.includes("ReservedParking")) spaces.reserved.push(x);
+            if (x.children[0].name.includes("ValidParking")) spaces.valid.push(x);
+          }
+        });
+        setInterval(() => {
+          spaces.valid.forEach(space => {
+            if (collision(car, space)) {
+              parkingStatus.space = "valid";
+              parkingStatus.valid = true;
+            }
+          });
+          spaces.reserved.forEach(space => {
+            if (collision(car, space)) {
+              parkingStatus.space = "reserved";
+              parkingStatus.valid = false;
+            }
+          });
+          let invalidSpaces = 0;
+          spaces.valid.forEach(x => {
+            spaces.reserved.forEach(d => {
+              if (!collision(car, x) && !collision(car, d)) {
+                invalidSpaces++;
+              }
+            });
+          });
+          if (invalidSpaces >= spaces.reserved.length * spaces.valid.length) {
+            parkingStatus.space = "invalid";
+            parkingStatus.valid = false;
+          }
+        });
       });
+      function collision(e, B) {
+        let firstBB = new THREE.Box3().setFromObject(e);
+        let secondBB = new THREE.Box3().setFromObject(B);
+        return firstBB.intersectsBox(secondBB);
+      }
       let raycaster = new THREE.Raycaster();
-      function collision(e,B){return false}
-      raycastTargets = [];
-      didCrash = false;
-      recentlytouchedstereo = false;
-      center = new THREE.Vector2(0,0);
+      let raycastTargets = [];
+      let didCrash = false;
+      let center = new THREE.Vector2(0, 0);
       outlinellock = 1;
-      collisionfollower=new THREE.Mesh(new THREE.BoxGeometry(6, 3, 3));
+      collisionfollower = new THREE.Mesh(new THREE.BoxGeometry(6, 3, 3));
       Notiflix.Notify.init({clickToClose:true,showOnlyTheLastOne:true,timeout:2000,info:{background:"#fff",textColor:"#333",notiflixIconColor:"#333"}});
       carwasintheair = false;
       function crash() {
@@ -188,7 +228,7 @@
           renderer.setPixelRatio(window.devicePixelRatio);
         }
         if (currentCamera == 0) {
-          camera.position.set(car.position.x, car.position.y, car.position.z);
+          camera.position.set(car.position.x, car.position.y + .3, car.position.z);
         } else if (currentCamera == 1) {
           camera.position.copy(car.position);
           camera.rotation.copy(car.rotation);
@@ -214,9 +254,6 @@
         } else if (intersection != null && intersection.object.name == "C-Stereo") {
           (document.querySelector("#NotiflixNotifyWrap") && document.querySelector("#NotiflixNotifyWrap").textContent.includes("Toggle")) || Notiflix.Notify.info("Toggle camera ('M' key to view)");
         }
-        if (intersection == null && recentlytouchedstereo == true) {
-          recentlytouchedstereo = false;
-        }
         typeof map!="undefined"&&!didCrash&&(()=>{let r=collisionfollower;r.position.copy(car.position);r.rotation.copy(car.rotation);r.updateMatrix();r.translateY(1);(collision(r,map.children[8])||collision(r,map.children[9])||collision(r,map.children[10])||collision(r,map.children[11]))&&(crash(),didCrash=true)})();
         didCrash&&(()=>{let r=collisionfollower;r.position.copy(car.position);r.rotation.copy(car.rotation);r.updateMatrix();r.translateY(1);collision(collisionfollower,map.children[8])&&(didCrashAfterCrash=true)})();
           (currentCamera == 2 && didCrash) && (swal({
@@ -233,7 +270,7 @@
       isDrivingRight = false;
       directionalLight = new THREE.DirectionalLight(0xffffff, 3);
       scene.add(directionalLight);
-      directionalLight.position.set(-5, 25, -1);
+      directionalLight.position.set(-5, 25, 10);
       directionalLight.castShadow = true;
       directionalLight.shadow.camera.near = 0.01;
       directionalLight.shadow.camera.far = 500;
@@ -253,11 +290,11 @@
       carAcceleration = 0;
       currentMapCoordinates = [27.5, 0, -30]
       function parkDetector() {
-        let x = car.position.x, y = car.position.y, z = car.position.z;
-        if ((currentMapCoordinates[0]>=0?x>=currentMapCoordinates[0]:x<=currentMapCoordinates[0])&&currentMapCoordinates[2]>=0?z>=currentMapCoordinates[2]:z<=currentMapCoordinates[2]) {
+        if (parkingStatus.space == "reserved" || !parkingStatus.valid) {
+          return false;
+        } else if (parkingStatus.space == "valid" && parkingStatus.valid) {
           return true;
         }
-        return false;
       }
       function drive(direction) {
         if (direction == "forward") {
@@ -395,11 +432,38 @@
             // location.replace("bonus/bonus0.html");
           });
           document.querySelector(".swal-button").style = "background:#6cc22e!important";
+        } else {
+          if (parkingStatus.space == "reserved") {
+            swal({
+              icon: "images/icons/swal/error.blue.png",
+              title: "Oh no!",
+              text: "You parked in a handicap spot. You will return to the main menu.",
+              button: "Close",
+              closeOnClickOutside: true,
+              closeOnEnterKey: true
+            }).then(function() {
+              parent.location.reload();
+            });
+          } else {
+            swal({
+              icon: "error",
+              title: "Not there yet!",
+              text: "Try parking closer to the target space.",
+              button: "Close",
+              closeOnClickOutside: true,
+              closeOnEnterKey: true
+            });
+          }
         }
       }
       setInterval(() => {
-        scene.traverse(x => (x.castShadow = true, x.receiveShadow = true));
-      });
+        if (currentCamera == 0) {
+          scene.traverse(x => (x.castShadow = false, x.receiveShadow = false));
+          renderer.shadowMap.needsUpdate = true;
+        } else {
+          scene.traverse(x => (x.castShadow = true, x.receiveShadow = true));
+        }
+      }, 1000);
     </script>
   </body>
 </html>
