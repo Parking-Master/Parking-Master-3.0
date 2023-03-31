@@ -91,6 +91,16 @@
           opacity: 0;
         }
       }
+      .ui .description {
+        position: absolute;
+        left: 20px;
+        top: 20px;
+        border-bottom: 2px solid #fff;
+        backdrop-filter: blur(2px);
+      }
+      .ui .description * {
+        color: #efefef;
+      }
     </style>
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
   </head>
@@ -107,6 +117,16 @@
     <script src="https://cdn.jsdelivr.net/gh/notiflix/Notiflix@latest/dist/notiflix-aio-3.2.5.min.js"></script>
     <div class="pointer"></div>
     <div class="ui">
+      <div class="description">
+        <p>Level: <span class="level">1</span></p>
+        <p>
+          <small>
+            Use the navigation controls to park in the designated spot.
+            <br>
+            There are (1) danger spot, (2) blue spots, and (3) handicap spots.
+          </small>
+        </p>
+      </div>
       <div class="radar-globe">
         <div class="center"></div>
       </div>
@@ -464,6 +484,11 @@
         if (e.key == "b") {
           stop();
         }
+        if (e.key == "Enter") {
+          if (swal.getState().isOpen) {
+            swal.close();
+          } else park();
+        }
         if (e.key == "Escape" && currentCamera == 2) {
           currentCamera = 0;
           camera.rotation.set(0, -Math.PI/2, 0);
@@ -513,7 +538,7 @@
         }
       });
       function park() {
-        if (parkDetector()) {
+        if (parkDetector() && (Math.abs(THREE.MathUtils.radToDeg(car.rotation.y)) >= 75 && Math.abs(THREE.MathUtils.radToDeg(car.rotation.y)) <= 105)) {
           swal({
             icon: "success",
             title: "Good job!",
