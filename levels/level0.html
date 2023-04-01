@@ -117,6 +117,7 @@
     <script src="https://cdn.jsdelivr.net/gh/notiflix/Notiflix@latest/dist/notiflix-aio-3.2.5.min.js"></script>
     <div class="pointer"></div>
     <div class="ui">
+      <img class="vignette" src="images/vignette.png" style="transition: opacity .15s; width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; bottom: 0; right: 0; margin: 0; padding: 0;">
       <div class="description">
         <p>Level: <span class="level">1</span></p>
         <p>
@@ -131,6 +132,7 @@
         <div class="center"></div>
       </div>
       <div class="camera">
+        <span style="position: absolute; font-size: 20px; color: #fff; left: 30px; bottom: 150px; z-index: 9999999999;">[<span class="speed">0</span>] m/h</span>
         <span style="position: absolute; font-size: 40px; color: red; left: 30px; bottom: 30px; z-index: 9999999999; visibility: hidden;" class="warning">!</span>
       </div>
       <div class="bottom-right-ui">
@@ -154,7 +156,6 @@
     </div>
     <img id="rearcamera" src="images/rearcamera.png" style="position:absolute;display:none;width:100%;height:100%;margin:0;padding:0;left:0;top:0;bottom:0;right:0;border:none;" />
     <script>
-      performance = localStorage["performance"] || 100;
       didplaycrashsoundtwice = false;
       window.addEventListener("load", (e) => {
         swal({
@@ -180,6 +181,12 @@
           PointerControls.isLocked = true;
         });
       });
+      debris = { mesh: new THREE.Mesh(), mixer: [], animations: [] };
+      new THREE.GLTFLoader().load("models/fx/debris.glb", (x) => {
+        debris.mesh = x.scene;
+        debris.animations = x.animations;
+        debris.mixer = new THREE.AnimationMixer(x.scene);
+      });
       loading = document.querySelector(".loader-cover");
       skidSound = document.querySelector("#skid-sound");
       carCrashSound = document.querySelector("#car-crash-sound");
@@ -203,9 +210,9 @@
       new THREE.GLTFLoader().load("models/vehicles/mini_cooper.glb", (car) => {
         window.car = car.scene;
         scene.add(car.scene);
-        performance >= 50 ? (new THREE.GLTFLoader).load("models/characters/driver.glb", (e) => {
+        new THREE.GLTFLoader().load("models/characters/driver.glb", (e) => {
           character = e.scene;
-        }) : character = new THREE.Mesh();
+        });
       });
       parkingStatus = {
         space: null,
@@ -223,10 +230,18 @@
             if (x.children[0].name.includes("ValidParking")) spaces.valid.push(x);
           }
         });
+        let chosenDangerSpots = [spaces.valid[Math.floor(Math.random() * spaces.valid.length)]];
+        chosenDangerSpots.forEach(x => {
+          spaces.valid[spaces.valid.indexOf(x)].name += "-danger";
+        });
+        let chosenBlueSpots = [spaces.valid[Math.floor(Math.random() * spaces.valid.length)], spaces.valid[Math.floor(Math.random() * spaces.valid.length)]];
+        chosenBlueSpots.forEach(x => {
+          spaces.valid[spaces.valid.indexOf(x)].name += "-blue";
+        });
         setInterval(() => {
           spaces.valid.forEach(space => {
             if (collision(car, space)) {
-              parkingStatus.space = "valid";
+              parkingStatus.space = space.name.includes("-danger") ? "danger" : space.name.includes("-blue") ? "blue" : "valid";
               parkingStatus.valid = true;
             }
           });
@@ -255,6 +270,7 @@
         let secondBB = new THREE.Box3().setFromObject(B);
         return firstBB.intersectsBox(secondBB);
       }
+      let clock = new THREE.Clock();
       let raycaster = new THREE.Raycaster();
       let raycastTargets = [];
       let didCrash = false;
@@ -268,7 +284,13 @@
         didCrash = true;
         stop();
         PointerControls.isLocked = false;
+        debris.mesh.position.copy(car.position);
+        debris.mixer.clipAction(debris.animations[0]).loop = THREE.LoopOnce;
+        debris.mixer.clipAction(debris.animations[0]).play();
+        scene.add(debris.mesh);
         let i = setInterval(() => {
+          let delta = clock.getDelta();
+          debris.mixer.update(delta);
           car.rotateY(.1);
           car.translateZ(carShiftedType == "reverse" ? .05 : -.05);
           camera.fov += (Math.floor(Math.random() * 2) == 0 ? -Math.floor(Math.random() * 5) : Math.floor(Math.random() * 5));
@@ -280,6 +302,9 @@
         setTimeout(() => {
           return GameOver("You crashed!");
         }, 500);
+        setTimeout(() => {
+          scene.remove(debris.mesh);
+        }, 1500);
       }
       isMoving = false;
       function GameOver(f) {
@@ -297,12 +322,17 @@
         });
       }
       didCrashAfterCrash = false;
+      carAcceleration = 0;
+      carShiftedType = "drive";
       function animate() {
-        performance >= 50 && (typeof character != "undefined" && ((() => { let k = car.clone(); k.rotation.y += Math.PI / 2; character.position.copy(car.position), character.rotation.copy(k.rotation), character.updateMatrix(), character.translateX(-.8), character.translateY(-2), character.translateZ(.5), character.scale.set(1.4,1.4,1.4) })(), (currentCamera == 1) ? (!(scene.children.indexOf(character) > -1) && scene.add(character)) : ((scene.children.indexOf(character) > -1 && scene.remove(character)))));
+        carAcceleration <= 0 ? carAcceleration = 0 : (carAcceleration += -.001);
+        typeof character != "undefined" && (((() => { let k = car.clone(); k.rotation.y += Math.PI / 2; character.position.copy(car.position), character.rotation.copy(k.rotation), character.updateMatrix(), character.translateX(-.8), character.translateY(-2), character.translateZ(.5), character.scale.set(1.4,1.4,1.4) })(), (currentCamera == 1) ? (!(scene.children.indexOf(character) > -1) && scene.add(character)) : ((scene.children.indexOf(character) > -1 && scene.remove(character)))));
         typeof car.getObjectByName("C-Shifter") != "undefined" && (raycastTargets.indexOf(car.getObjectByName("C-Shifter")) > -1 || raycastTargets.push(car.getObjectByName("C-Shifter")));
         typeof car.getObjectByName("C-Stereo") != "undefined" && (raycastTargets.indexOf(car.getObjectByName("C-Stereo")) > -1 || raycastTargets.push(car.getObjectByName("C-Stereo")));
         camera.updateMatrixWorld();
         document.querySelector(".radar-globe").querySelector(".center").style.transform = `rotate(${-THREE.MathUtils.radToDeg(car.rotation.y)}deg)`;
+        document.querySelector(".speed").textContent = (carAcceleration * 50).toFixed(0);
+        document.querySelector(".shifter").value = carShiftedType[0].toUpperCase().trim();
         raycaster.setFromCamera(center, camera);
         let intersections = raycaster.intersectObjects(raycastTargets);
         intersection = intersections.length > 0 ? intersections[0] : null;
@@ -400,12 +430,11 @@
       const PointerControls = new PointerLockControls(camera, renderer.domElement);
       PointerControls.pointerSpeed = 2;
       function onWindowResize(){camera.aspect=window.innerWidth/window.innerHeight,camera.updateProjectionMatrix(),renderer.setSize(window.innerWidth,window.innerHeight)/*,document.querySelector("canvas").style.marginLeft=-((document.querySelector("canvas").style.width.split("px")[0]-0)/2)+"px",document.querySelector("canvas").style.left="50%",document.querySelector("canvas").style.position="relative"*/}window.addEventListener("resize",onWindowResize,!1);
-      carAcceleration = 0;
       currentMapCoordinates = [27.5, 0, -30]
       function parkDetector() {
         if (parkingStatus.space == "reserved" || !parkingStatus.valid) {
           return false;
-        } else if (parkingStatus.space == "valid" && parkingStatus.valid) {
+        } else if (/valid|danger|blue/gi.test(parkingStatus.space) && parkingStatus.valid) {
           return true;
         }
       }
@@ -443,7 +472,6 @@
           drive("right");
         }
       });
-      carShiftedType = "drive";
       function shift(e) {
         carShiftedType = e;
       }
@@ -506,7 +534,6 @@
         setTimeout(() => { isStopped = false }, 100);
       }
       document.addEventListener("keyup", (e) => {
-        carAcceleration = 0;
         if (e.key == "ArrowUp") {
           let t = .2;
           let v = 0;
@@ -539,11 +566,35 @@
       });
       function park() {
         if (parkDetector() && (Math.abs(THREE.MathUtils.radToDeg(car.rotation.y)) >= 75 && Math.abs(THREE.MathUtils.radToDeg(car.rotation.y)) <= 105)) {
+          if (parkingStatus.space == "danger") {
+            return swal({
+              icon: "error",
+              title: "Oh no!",
+              text: "You parked in the danger spot. You will return to the main menu.",
+              button: "Close",
+              closeOnClickOutside: true,
+              closeOnEnterKey: true
+            }).then(function() {
+              parent.location.reload();
+            });
+          }
+          if (parkingStatus.space == "blue") {
+            return swal({
+              icon: "images/icons/swal/success.blue.png",
+              title: "Congrats!",
+              text: "You parked in a blue spot. You earned an extra point!",
+              button: "Next level",
+              closeOnClickOutside: true,
+              closeOnEnterKey: true
+            }).then(function() {
+            // location.replace("bonus/bonus0.html");
+          });
+          }
           swal({
             icon: "success",
             title: "Good job!",
             text: "You parked! Click Next to continue.",
-            button: "Next",
+            button: "Next level",
             closeOnClickOutside: true,
             closeOnEnterKey: true
           }).then(function() {
