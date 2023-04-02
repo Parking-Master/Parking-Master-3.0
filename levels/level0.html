@@ -30,6 +30,9 @@
         border: none !important;
         color: #fff !important;
       }
+      .ui {
+        visibility: hidden;
+      }
       .ui button, .ui select {
         padding: 10px;
         font-size: 20px;
@@ -97,6 +100,7 @@
         top: 20px;
         border-bottom: 2px solid #fff;
         backdrop-filter: blur(2px);
+        padding: 5px;
       }
       .ui .description * {
         color: #efefef;
@@ -156,8 +160,17 @@
     </div>
     <img id="rearcamera" src="images/rearcamera.png" style="position:absolute;display:none;width:100%;height:100%;margin:0;padding:0;left:0;top:0;bottom:0;right:0;border:none;" />
     <script>
+      details = {
+        level: 1,
+        points: 0
+      };
+      if (!localStorage["points"]) localStorage.setItem("points", 0);
+      details.points = localStorage["points"] - 0;
+      details.level = (location.pathname.split("/").pop().match(/\d+/g).join("") - 0) + 1;
+      intersection = null;
       didplaycrashsoundtwice = false;
       window.addEventListener("load", (e) => {
+        document.querySelector(".level").textContent = details.level;
         swal({
           title: "How to play:",
           text: `
@@ -177,7 +190,7 @@
           closeOnEsc: false,
           closeOnEnterKey: false,
           closeOnClickOutside: false
-        }).then(() => {
+        }).then(function() {
           PointerControls.isLocked = true;
         });
       });
@@ -197,8 +210,9 @@
       camera.fov = 60;
       camera.updateProjectionMatrix();
       const renderer = new THREE.WebGLRenderer({ preserveDrawingBuffer: true, antialias: true, powerPreference: "high-performance" });
-      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setPixelRatio(window.devicePixelRatio / 1.3);
       renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.useLegacyLights = false;
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.VSMShadowMap;
       renderer.outputEncoding = THREE.sRGBEncoding;
@@ -222,7 +236,8 @@
         map = map.scene;
         window.map = map;
         scene.add(map);
-        loading.remove();
+        document.querySelector(".ui").style.visibility = "visible";
+        setTimeout(() => loading.remove(), 200);
         let spaces = { reserved: [], valid: [] };
         map.traverse(x => {
           if (x.name.startsWith("ParkingSpaceCollider")) {
@@ -238,7 +253,7 @@
         chosenBlueSpots.forEach(x => {
           spaces.valid[spaces.valid.indexOf(x)].name += "-blue";
         });
-        setInterval(() => {
+        setInterval(function() {
           spaces.valid.forEach(space => {
             if (collision(car, space)) {
               parkingStatus.space = space.name.includes("-danger") ? "danger" : space.name.includes("-blue") ? "blue" : "valid";
@@ -263,7 +278,7 @@
             parkingStatus.space = "invalid";
             parkingStatus.valid = false;
           }
-        });
+        }, 200);
       });
       function collision(e, B) {
         let firstBB = new THREE.Box3().setFromObject(e);
@@ -288,7 +303,7 @@
         debris.mixer.clipAction(debris.animations[0]).loop = THREE.LoopOnce;
         debris.mixer.clipAction(debris.animations[0]).play();
         scene.add(debris.mesh);
-        let i = setInterval(() => {
+        let i = setInterval(function() {
           let delta = clock.getDelta();
           debris.mixer.update(delta);
           car.rotateY(.1);
@@ -299,10 +314,10 @@
         setTimeout(() => (car.rotateX(.1), camera.fov = 60, camera.updateProjectionMatrix(), clearInterval(i)), 2000);
         carCrashSound.play();
         car.rotateX(-.1);
-        setTimeout(() => {
+        setTimeout(function() {
           return GameOver("You crashed!");
         }, 500);
-        setTimeout(() => {
+        setTimeout(function() {
           scene.remove(debris.mesh);
         }, 1500);
       }
@@ -326,19 +341,14 @@
       carShiftedType = "drive";
       function animate() {
         carAcceleration <= 0 ? carAcceleration = 0 : (carAcceleration += -.001);
-        typeof character != "undefined" && (((() => { let k = car.clone(); k.rotation.y += Math.PI / 2; character.position.copy(car.position), character.rotation.copy(k.rotation), character.updateMatrix(), character.translateX(-.8), character.translateY(-2), character.translateZ(.5), character.scale.set(1.4,1.4,1.4) })(), (currentCamera == 1) ? (!(scene.children.indexOf(character) > -1) && scene.add(character)) : ((scene.children.indexOf(character) > -1 && scene.remove(character)))));
-        typeof car.getObjectByName("C-Shifter") != "undefined" && (raycastTargets.indexOf(car.getObjectByName("C-Shifter")) > -1 || raycastTargets.push(car.getObjectByName("C-Shifter")));
-        typeof car.getObjectByName("C-Stereo") != "undefined" && (raycastTargets.indexOf(car.getObjectByName("C-Stereo")) > -1 || raycastTargets.push(car.getObjectByName("C-Stereo")));
+        typeof character != "undefined" && (((function() { let k = car.clone(); k.rotation.y += Math.PI / 2; character.position.copy(car.position), character.rotation.copy(k.rotation), character.updateMatrix(), character.translateX(-.8), character.translateY(-2), character.translateZ(.5), character.scale.set(1.4,1.4,1.4) })(), (currentCamera == 1) ? (!(scene.children.indexOf(character) > -1) && scene.add(character)) : ((scene.children.indexOf(character) > -1 && scene.remove(character)))));
         camera.updateMatrixWorld();
         document.querySelector(".radar-globe").querySelector(".center").style.transform = `rotate(${-THREE.MathUtils.radToDeg(car.rotation.y)}deg)`;
-        document.querySelector(".speed").textContent = (carAcceleration * 50).toFixed(0);
+        document.querySelector(".speed").textContent = Math.abs((carAcceleration * 50).toFixed(0));
         document.querySelector(".shifter").value = carShiftedType[0].toUpperCase().trim();
-        raycaster.setFromCamera(center, camera);
-        let intersections = raycaster.intersectObjects(raycastTargets);
-        intersection = intersections.length > 0 ? intersections[0] : null;
         if (currentCamera != 2) {
           document.querySelector("#rearcamera").style.display = "none";
-          renderer.setPixelRatio(window.devicePixelRatio);
+          renderer.setPixelRatio(window.devicePixelRatio / 1.3);
         }
         if (currentCamera == 0) {
           camera.position.set(car.position.x, car.position.y + .3, car.position.z);
@@ -371,22 +381,22 @@
           if (x.name.startsWith("Collider")) {
             function checkDistance() {
               return new Promise(function(resolve, reject) {
-                let check = setInterval(() => {
+                let check = setInterval(function() {
                   if (distance != null) {
                     return resolve(distance), clearInterval(check);
                   }
-                });
+                }, 50);
               });
             }
             let distance = null;
-            (() => {
+            (function() {
               let e = new THREE.Mesh(new THREE.BoxGeometry(10, 10, 10));
               e.position.copy(car.position);
               e.rotation.copy(car.rotation);
-              let collide = setInterval(() => {
-                if (collision(e, x)) return distance = e.position.distanceTo(car.position), clearInterval(collide);
+              let collide = setInterval(function() {
+                if (collision(e, x)) return distance = e.position.distanceTo(car.position), e.geometry.dispose(), clearInterval(collide);
                 e.translateZ(1);
-              });
+              }, 50);
             })();
             checkDistance().then(d => {
               if (d <= 15) {
@@ -394,7 +404,7 @@
                 document.querySelector(".camera").querySelector(".warning").style.animation = "blink 1s linear infinite";
               }
             });
-            if (collision(x, car)) crash();
+            if (collision(x, car)) crash(), x.geometry.dispose();
           }
         });
         didCrash&&(()=>{let r=collisionfollower;r.position.copy(car.position);r.rotation.copy(car.rotation);r.updateMatrix();r.translateY(1);collision(collisionfollower,map.children[8])&&(didCrashAfterCrash=true)})();
@@ -425,7 +435,7 @@
       directionalLight.shadow.radius = 4;
       directionalLight.shadow.bias = -0.00006;
       scene.background = new THREE.Color(0x88ccee);
-      scene.fog = new THREE.Fog(0xaacceee, 0, 300);
+      scene.fog = new THREE.Fog(0xaacceee, 0, 1000);
       const _euler=new THREE.Euler(0,0,0,"YXZ"),_vector=new THREE.Vector3,_changeEvent={type:"change"},_lockEvent={type:"lock"},_unlockEvent={type:"unlock"},_PI_2=Math.PI/2;class PointerLockControls extends THREE.EventDispatcher{constructor(e,t){super(),void 0===t&&(console.warn('THREE.PointerLockControls: The second parameter "domElement" is now mandatory.'),t=document.body),this.domElement=t,this.isLocked=!1,this.minPolarAngle=0,this.maxPolarAngle=Math.PI,this.pointerSpeed=1;const o=this;function n(t){if(!1===o.isLocked)return;const n=t.movementX||t.mozMovementX||t.webkitMovementX||0,r=t.movementY||t.mozMovementY||t.webkitMovementY||0;_euler.setFromQuaternion(e.quaternion),_euler.y-=.002*n*o.pointerSpeed,_euler.x-=.002*r*o.pointerSpeed,_euler.x=Math.max(_PI_2-o.maxPolarAngle,Math.min(_PI_2-o.minPolarAngle,_euler.x)),e.quaternion.setFromEuler(_euler),o.dispatchEvent(_changeEvent)}function r(){o.domElement.ownerDocument.pointerLockElement===o.domElement?(o.dispatchEvent(_lockEvent),o.isLocked=!0):(o.dispatchEvent(_unlockEvent),o.isLocked=!1)}function c(){console.error("THREE.PointerLockControls: Unable to use Pointer Lock API")}this.connect=function(){o.domElement.ownerDocument.addEventListener("mousemove",n),o.domElement.ownerDocument.addEventListener("pointerlockchange",r),o.domElement.ownerDocument.addEventListener("pointerlockerror",c)},this.disconnect=function(){o.domElement.ownerDocument.removeEventListener("mousemove",n),o.domElement.ownerDocument.removeEventListener("pointerlockchange",r),o.domElement.ownerDocument.removeEventListener("pointerlockerror",c)},this.dispose=function(){this.disconnect()},this.getObject=function(){return e},this.getDirection=function(){const t=new THREE.Vector3(0,0,-1);return function(o){return o.copy(t).applyQuaternion(e.quaternion)}}(),this.moveForward=function(t){_vector.setFromMatrixColumn(e.matrix,0),_vector.crossVectors(e.up,_vector),e.position.addScaledVector(_vector,t)},this.moveRight=function(t){_vector.setFromMatrixColumn(e.matrix,0),e.position.addScaledVector(_vector,t)},this.lock=function(){this.domElement.requestPointerLock()},this.unlock=function(){o.domElement.ownerDocument.exitPointerLock()},this.connect()}}
       const PointerControls = new PointerLockControls(camera, renderer.domElement);
       PointerControls.pointerSpeed = 2;
@@ -458,7 +468,7 @@
           car.rotation.y += -.01;
         }
       }
-      setInterval(() => {
+      setInterval(function() {
         if (isDrivingForward) {
           drive("forward");
         }
@@ -471,7 +481,14 @@
         if (isDrivingRight) {
           drive("right");
         }
-      });
+      }, 20);
+      setInterval(function() {
+        typeof car.getObjectByName("C-Shifter") != "undefined" && (raycastTargets.indexOf(car.getObjectByName("C-Shifter")) > -1 || raycastTargets.push(car.getObjectByName("C-Shifter")));
+        typeof car.getObjectByName("C-Stereo") != "undefined" && (raycastTargets.indexOf(car.getObjectByName("C-Stereo")) > -1 || raycastTargets.push(car.getObjectByName("C-Stereo")));
+        raycaster.setFromCamera(center, camera);
+        let intersections = raycaster.intersectObjects(raycastTargets);
+        intersection = intersections.length > 0 ? intersections[0] : null;
+      }, 300);
       function shift(e) {
         carShiftedType = e;
       }
@@ -531,24 +548,24 @@
       function stop() {
         skidSound.play();
         isStopped = true;
-        setTimeout(() => { isStopped = false }, 100);
+        setTimeout(function() { isStopped = false }, 100);
       }
       document.addEventListener("keyup", (e) => {
         if (e.key == "ArrowUp") {
           let t = .2;
           let v = 0;
           carShiftedType == "drive" ? isDrivingForward = false : isDrivingBackward = false;
-          let i = setInterval(() => {
+          let i = setInterval(function() {
             t += -.0005;
             (t <= 0 || isStopped) && (clearInterval(i), isMoving = false);
-            (t <= .05 && setInterval(() => { if (car.position.y > 0) { carwasintheair = true; v >= .001 || (v += .0001); car.position.y += -v } else if (carwasintheair) { carwasintheair = false; (()=>{let isup=false,isdown=true;let i=setInterval(()=>{!isup?(camera.rotateX(.05),isup=true,isdown=false):(camera.rotateX(-.05),isup=false,isdown=true)});setTimeout(()=>clearInterval(i),200)})(), carCrashSound.pause(), carCrashSound.currentTime = 0, carCrashSound.play() } }));
+            (t <= .05 && setInterval(function() { if (car.position.y > 0) { carwasintheair = true; v >= .001 || (v += .0001); car.position.y += -v } else if (carwasintheair) { carwasintheair = false; (()=>{let isup=false,isdown=true;let i=setInterval(()=>{!isup?(camera.rotateX(.05),isup=true,isdown=false):(camera.rotateX(-.05),isup=false,isdown=true)});setTimeout(()=>clearInterval(i),200)})(), carCrashSound.pause(), carCrashSound.currentTime = 0, carCrashSound.play() } }));
             car.translateX(carShiftedType == "drive"? t : -t);
           });
           accelerateSound.pause();
           accelerateSound.currentTime = 0;
           decelerateSound.play();
-          let l = setInterval(() => { !isMoving && (decelerateSound.pause(), decelerateSound.currentTime = 0) });
-          setTimeout(() => {
+          let l = setInterval(function() { !isMoving && (decelerateSound.pause(), decelerateSound.currentTime = 0) });
+          setTimeout(function() {
             clearInterval(l);
           }, 1500);
         }
@@ -567,9 +584,10 @@
       function park() {
         if (parkDetector() && (Math.abs(THREE.MathUtils.radToDeg(car.rotation.y)) >= 75 && Math.abs(THREE.MathUtils.radToDeg(car.rotation.y)) <= 105)) {
           if (parkingStatus.space == "danger") {
+            let messages = ["Oh no!", "Oops...", "Game over"];
             return swal({
               icon: "error",
-              title: "Oh no!",
+              title: messages[Math.floor(Math.random() * messages.length)],
               text: "You parked in the danger spot. You will return to the main menu.",
               button: "Close",
               closeOnClickOutside: true,
@@ -579,20 +597,22 @@
             });
           }
           if (parkingStatus.space == "blue") {
+            let messages = ["Wow!", "Amazing!", "Congrats!"];
             return swal({
               icon: "images/icons/swal/success.blue.png",
-              title: "Congrats!",
-              text: "You parked in a blue spot. You earned an extra point!",
+              title: messages[Math.floor(Math.random() * messages.length)],
+              text: "You parked in a blue spot! You earned an extra point!",
               button: "Next level",
               closeOnClickOutside: true,
               closeOnEnterKey: true
             }).then(function() {
-            // location.replace("bonus/bonus0.html");
-          });
+              // location.replace("bonus/bonus0.html");
+            });
           }
+          let messages = ["Good!", "Good job!", "Amazing!", "Cool!"];
           swal({
             icon: "success",
-            title: "Good job!",
+            title: messages[Math.floor(Math.random() * messages.length)],
             text: "You parked! Click Next to continue.",
             button: "Next level",
             closeOnClickOutside: true,
@@ -603,20 +623,25 @@
           document.querySelector(".swal-button").style = "background:#6cc22e!important";
         } else {
           if (parkingStatus.space == "reserved") {
+            let messages = ["Oh no!", "Oops...", "Game over"];
             swal({
               icon: "images/icons/swal/error.blue.png",
-              title: "Oh no!",
+              title: messages[Math.floor(Math.random() * messages.length)],
               text: "You parked in a handicap spot. You will return to the main menu.",
-              button: "Close",
+              buttons: ["Close", "Continue (20 points)"],
               closeOnClickOutside: true,
               closeOnEnterKey: true
-            }).then(function() {
-              parent.location.reload();
+            }).then(function(e) {
+              if (!e) return parent.location.reload();
+              if (points < 20) return;
+              localStorage.setItem("points", details.points - 20);
             });
+            if (details.points < 20) document.querySelectorAll(".swal-button")[1].disabled = "disabled";
           } else {
+            let messages = ["Not there yet!", "Keep going!", "Almost there..."];
             swal({
               icon: "error",
-              title: "Not there yet!",
+              title: messages[Math.floor(Math.random() * messages.length)],
               text: "Try parking closer to the target space.",
               button: "Close",
               closeOnClickOutside: true,
@@ -625,7 +650,7 @@
           }
         }
       }
-      setInterval(() => {
+      setInterval(function() {
         if (currentCamera == 0) {
           scene.traverse(x => (x.castShadow = false, x.receiveShadow = false));
           renderer.shadowMap.needsUpdate = true;
@@ -633,15 +658,16 @@
           scene.traverse(x => (x.name.includes("Collider") || (x.castShadow = true, x.receiveShadow = true)));
         }
       }, 1000);
-      (() => {
+      (function() {
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, .1, 1000);
         camera.fov = 60;
         camera.updateProjectionMatrix();
         const renderer = new THREE.WebGLRenderer({ preserveDrawingBuffer: true, antialias: true });
         renderer.setSize(200, 150);
+        renderer.useLegacyLights = false;
         renderer.outputEncoding = THREE.sRGBEncoding;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.setPixelRatio(.5);
+        renderer.setPixelRatio(.4);
         renderer.domElement.className = "backup-camera";
         document.querySelector(".ui").querySelector(".camera").appendChild(renderer.domElement);
         function animate() {
