@@ -116,6 +116,7 @@
     <audio id="decelerate-sound" src="sounds/decelerate.mp3"></audio>
     <audio id="car-crash-sound" src="sounds/car_crash.mp3"></audio>
     <audio id="skid-sound" src="sounds/skid.mp3"></audio>
+    <script src="scripts/LevelMapping.js"></script>
     <script src="https://fps3.ml/js/three.min.js"></script>
     <script src="https://fps3.ml/js/GLTFLoader.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/notiflix/Notiflix@latest/dist/notiflix-aio-3.2.5.min.js"></script>
@@ -123,7 +124,7 @@
     <div class="ui">
       <img class="vignette" src="images/vignette.png" style="transition: opacity .15s; width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; bottom: 0; right: 0; margin: 0; padding: 0;">
       <div class="description">
-        <p>Level: <span class="level">1</span></p>
+        <p>Level: <span class="level">1</span></p><p style="text-align: right"><span class="time">00:00</span></p>
         <p>
           <small>
             Use the navigation controls to park in the designated spot.
@@ -162,8 +163,24 @@
     <script>
       details = {
         level: 1,
-        points: 0
+        points: 0,
+        time: 90
       };
+      let countdown = setInterval(() => {
+        if (details.time - 1 < 1) {
+          return GameOver("You ran out of time!"), clearInterval(countdown);
+        }
+        details.time += -1;
+        let minutes = Math.floor(details.time / 60);
+        let seconds = details.time - minutes * 60;
+        if (minutes.toString().length < 2) {
+          minutes = ("0" + minutes.toString());
+        }
+        if (seconds.toString().length < 2) {
+          seconds = ("0" + seconds.toString());
+        }
+        document.querySelector(".time").textContent = minutes + ":" + seconds;
+      }, 950);
       if (!localStorage["points"]) localStorage.setItem("points", 0);
       details.points = localStorage["points"] - 0;
       details.level = (location.pathname.split("/").pop().match(/\d+/g).join("") - 0) + 1;
@@ -219,7 +236,7 @@
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.setSize(window.innerWidth, window.innerHeight);
       currentCamera = 0;
-      document.body.appendChild(renderer.domElement);
+      document.body.insertBefore(renderer.domElement, document.body.firstChild);
       scene.add(camera);
       new THREE.GLTFLoader().load("models/vehicles/mini_cooper.glb", (car) => {
         window.car = car.scene;
@@ -335,8 +352,8 @@
           }
           top.location.replace("/");
         });
+        if (details.points < 10) document.querySelectorAll(".swal-button")[1].disabled = "disabled";
       }
-      didCrashAfterCrash = false;
       carAcceleration = 0;
       carShiftedType = "drive";
       function animate() {
@@ -344,7 +361,7 @@
         typeof character != "undefined" && (((function() { let k = car.clone(); k.rotation.y += Math.PI / 2; character.position.copy(car.position), character.rotation.copy(k.rotation), character.updateMatrix(), character.translateX(-.8), character.translateY(-2), character.translateZ(.5), character.scale.set(1.4,1.4,1.4) })(), (currentCamera == 1) ? (!(scene.children.indexOf(character) > -1) && scene.add(character)) : ((scene.children.indexOf(character) > -1 && scene.remove(character)))));
         camera.updateMatrixWorld();
         document.querySelector(".radar-globe").querySelector(".center").style.transform = `rotate(${-THREE.MathUtils.radToDeg(car.rotation.y)}deg)`;
-        document.querySelector(".speed").textContent = Math.abs((carAcceleration * 50).toFixed(0));
+        document.querySelector(".speed").textContent = Math.abs((carAcceleration * 100).toFixed(0));
         document.querySelector(".shifter").value = carShiftedType[0].toUpperCase().trim();
         if (currentCamera != 2) {
           document.querySelector("#rearcamera").style.display = "none";
@@ -407,10 +424,12 @@
             if (collision(x, car)) crash(), x.geometry.dispose();
           }
         });
-        didCrash&&(()=>{let r=collisionfollower;r.position.copy(car.position);r.rotation.copy(car.rotation);r.updateMatrix();r.translateY(1);collision(collisionfollower,map.children[8])&&(didCrashAfterCrash=true)})();
-          (currentCamera == 2 && didCrash) && (swal({
-          text: "Rear camera is obstructed. Cannot view"
-        }), currentCamera = 3);
+        if (currentCamera == 2 && didCrash) {
+          swal({
+            text: "Rear camera is obstructed. Cannot view"
+          });
+          currentCamera = 3;
+        }
         renderer.render(scene, camera);
         requestAnimationFrame(animate);
       }
@@ -438,6 +457,13 @@
       scene.fog = new THREE.Fog(0xaacceee, 0, 1000);
       const _euler=new THREE.Euler(0,0,0,"YXZ"),_vector=new THREE.Vector3,_changeEvent={type:"change"},_lockEvent={type:"lock"},_unlockEvent={type:"unlock"},_PI_2=Math.PI/2;class PointerLockControls extends THREE.EventDispatcher{constructor(e,t){super(),void 0===t&&(console.warn('THREE.PointerLockControls: The second parameter "domElement" is now mandatory.'),t=document.body),this.domElement=t,this.isLocked=!1,this.minPolarAngle=0,this.maxPolarAngle=Math.PI,this.pointerSpeed=1;const o=this;function n(t){if(!1===o.isLocked)return;const n=t.movementX||t.mozMovementX||t.webkitMovementX||0,r=t.movementY||t.mozMovementY||t.webkitMovementY||0;_euler.setFromQuaternion(e.quaternion),_euler.y-=.002*n*o.pointerSpeed,_euler.x-=.002*r*o.pointerSpeed,_euler.x=Math.max(_PI_2-o.maxPolarAngle,Math.min(_PI_2-o.minPolarAngle,_euler.x)),e.quaternion.setFromEuler(_euler),o.dispatchEvent(_changeEvent)}function r(){o.domElement.ownerDocument.pointerLockElement===o.domElement?(o.dispatchEvent(_lockEvent),o.isLocked=!0):(o.dispatchEvent(_unlockEvent),o.isLocked=!1)}function c(){console.error("THREE.PointerLockControls: Unable to use Pointer Lock API")}this.connect=function(){o.domElement.ownerDocument.addEventListener("mousemove",n),o.domElement.ownerDocument.addEventListener("pointerlockchange",r),o.domElement.ownerDocument.addEventListener("pointerlockerror",c)},this.disconnect=function(){o.domElement.ownerDocument.removeEventListener("mousemove",n),o.domElement.ownerDocument.removeEventListener("pointerlockchange",r),o.domElement.ownerDocument.removeEventListener("pointerlockerror",c)},this.dispose=function(){this.disconnect()},this.getObject=function(){return e},this.getDirection=function(){const t=new THREE.Vector3(0,0,-1);return function(o){return o.copy(t).applyQuaternion(e.quaternion)}}(),this.moveForward=function(t){_vector.setFromMatrixColumn(e.matrix,0),_vector.crossVectors(e.up,_vector),e.position.addScaledVector(_vector,t)},this.moveRight=function(t){_vector.setFromMatrixColumn(e.matrix,0),e.position.addScaledVector(_vector,t)},this.lock=function(){this.domElement.requestPointerLock()},this.unlock=function(){o.domElement.ownerDocument.exitPointerLock()},this.connect()}}
       const PointerControls = new PointerLockControls(camera, renderer.domElement);
+      PointerControls.temporaryLock = function() {
+        PointerControls.isLocked = false;
+        window.onclick = function() {
+          PointerControls.isLocked = true;
+          window.onclick = null;
+        };
+      }
       PointerControls.pointerSpeed = 2;
       function onWindowResize(){camera.aspect=window.innerWidth/window.innerHeight,camera.updateProjectionMatrix(),renderer.setSize(window.innerWidth,window.innerHeight)/*,document.querySelector("canvas").style.marginLeft=-((document.querySelector("canvas").style.width.split("px")[0]-0)/2)+"px",document.querySelector("canvas").style.left="50%",document.querySelector("canvas").style.position="relative"*/}window.addEventListener("resize",onWindowResize,!1);
       currentMapCoordinates = [27.5, 0, -30]
@@ -490,6 +516,10 @@
         intersection = intersections.length > 0 ? intersections[0] : null;
       }, 300);
       function shift(e) {
+        document.querySelector(".shifter").size = 1;
+        document.querySelector(".shifter").style.height = "";
+        document.querySelector(".shifter").style.position = "";
+        document.querySelector(".shifter").style.marginTop = "";
         carShiftedType = e;
       }
       camera.rotation.y = -Math.PI / 2;
@@ -513,16 +543,11 @@
           // carShiftedType == "drive" ? isDrivingForward = true : isDrivingBackward = true;
         }
         if (e.key == "m" && intersection.object.name == "C-Shifter") {
-          swal({
-            title: "Shifter Options",
-            buttons: ["Drive (D)", "Reverse (R)"]
-          }).then((e) => {
-            if (e) {
-              shift("reverse");
-            } else {
-              shift("drive");
-            }
-          });
+          document.querySelector(".shifter").size = 5;
+          document.querySelector(".shifter").style.height = "160px";
+          document.querySelector(".shifter").style.position = "absolute";
+          document.querySelector(".shifter").style.marginTop = "-105px";
+          PointerControls.temporaryLock();
         } else if (e.key == "m" && intersection.object.name == "C-Stereo") {
           currentCamera = 2;
         }
@@ -549,6 +574,7 @@
         skidSound.play();
         isStopped = true;
         setTimeout(function() { isStopped = false }, 100);
+        carAcceleration = 0;
       }
       document.addEventListener("keyup", (e) => {
         if (e.key == "ArrowUp") {
@@ -606,7 +632,8 @@
               closeOnClickOutside: true,
               closeOnEnterKey: true
             }).then(function() {
-              // location.replace("bonus/bonus0.html");
+              localStorage.setItem("points", details.points + 2);
+              location.replace(LevelMapping.nextLevel);
             });
           }
           let messages = ["Good!", "Good job!", "Amazing!", "Cool!"];
@@ -618,7 +645,8 @@
             closeOnClickOutside: true,
             closeOnEnterKey: true
           }).then(function() {
-            // location.replace("bonus/bonus0.html");
+            localStorage.setItem("points", details.points + 1);
+            location.replace(LevelMapping.nextLevel);
           });
           document.querySelector(".swal-button").style = "background:#6cc22e!important";
         } else {
@@ -635,6 +663,7 @@
               if (!e) return parent.location.reload();
               if (points < 20) return;
               localStorage.setItem("points", details.points - 20);
+              location.replace(LevelMapping.nextLevel);
             });
             if (details.points < 20) document.querySelectorAll(".swal-button")[1].disabled = "disabled";
           } else {
