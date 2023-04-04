@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden !important;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      .pointer {
+        position: absolute;
+        width: 5px;
+        height: 5px;
+        margin: 0;
+        padding: 0;
+        border-radius: 50%;
+        background: #fff;
+        left: 50%;
+        top: 50%;
+        margin-left: -2.5px;
+        margin-top: -2.5px;
+      }
+      .swal-button {
+        background: #333 !important;
+        box-shadow: none !important;
+        outline: none !important;
+        border: none !important;
+        color: #fff !important;
+      }
+      .ui {
+        visibility: hidden;
+      }
+      .ui button, .ui select {
+        padding: 10px;
+        font-size: 20px;
+        background: #fff;
+        color: #333;
+        border: 1px solid #333;
+        border-radius: 5px;
+        position: relative;
+        width: 110px;
+        height: 50px;
+        cursor: pointer;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.24);
+        display: inline-block;
+        overflow: hidden;
+        white-space: nowrap;
+        margin: 5px;
+      }
+      .ui .bottom-right-ui {
+        position: absolute;
+        right: 20px;
+        bottom: 20px;
+      }
+      .ui .backup-camera {
+        position: absolute;
+        left: 20px;
+        bottom: 20px;
+        border: 2px solid #fff;
+        border-radius: 3px;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.24);
+      }
+      .ui .radar-globe {
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        background: #fefefe;
+        border-radius: 100%;
+        top: 20px;
+        right: 20px;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.24);
+        background-image: linear-gradient(#000, #000);
+        background-size: .5px 100%;
+        background-repeat: no-repeat;
+        background-position: center center;
+        border-right: 5px solid blue;
+        border-left: 5px solid blue;
+        outline: 2px dotted #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .ui .radar-globe .center {
+        position: relative;
+        width: 50px;
+        border-radius: 20%;
+        border: 5px solid #333;
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+      .ui .description {
+        position: absolute;
+        left: 20px;
+        top: 20px;
+        border-bottom: 2px solid #fff;
+        backdrop-filter: blur(2px);
+        padding: 5px;
+      }
+      .ui .description * {
+        color: #efefef;
+      }
+    </style>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  </head>
+  <body>
+    <base href="../">
+    <style>.loader{width:400px;height:40px;background-color:#fff;top:50%;left:50%;margin:-40px;position:absolute;border-radius:100px;box-shadow:inset 0 0 0 2px #333;z-index:99999;}.loader:after{border-radius:100px;content:'';position:absolute;background-color:#333;left:2px;top:2px;bottom:2px;right:360px;animation-name:slide;animation-duration:2s;animation-easing-function:linear;animation-iteration-count:infinite;box-shadow:0 1px 2px rgba(0,0,0,.2)}@keyframes slide{0%{right:360px;left:2px}5%{left:2px}50%{right:2px;left:360px}55%{right:2px}100%{right:360px;left:2px}}</style>
+    <div class="loader-cover" style="position:absolute;width:100%;height:100%;left:0;top:0;right:0;bottom:0;background:#fff;z-index:99998;"><div class="loader-title" style="position:relative;text-align:center;color:#333;font-weight:bold;font-size:30px;top:150px;">LOADING LEVELS</div><br><div class="loader" style="left:50%;margin-left:-200px;"></div></div>
+    <audio id="accelerate-sound" src="sounds/accelerate-trim.mp3"></audio>
+    <audio id="decelerate-sound" src="sounds/decelerate.mp3"></audio>
+    <audio id="car-crash-sound" src="sounds/car_crash.mp3"></audio>
+    <audio id="skid-sound" src="sounds/skid.mp3"></audio>
+    <script src="scripts/LevelMapping.js"></script>
+    <script src="https://fps3.ml/js/three.min.js"></script>
+    <script src="https://fps3.ml/js/GLTFLoader.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/notiflix/Notiflix@latest/dist/notiflix-aio-3.2.5.min.js"></script>
+    <div class="pointer"></div>
+    <div class="ui">
+      <img class="vignette" src="images/vignette.png" style="transition: opacity .15s; width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; bottom: 0; right: 0; margin: 0; padding: 0;">
+      <div class="description">
+        <p>Level: <span class="level">1</span></p><p style="text-align: right"><span class="time">00:00</span></p>
+        <p>
+          <small>
+            Use the navigation controls to park in the designated spot.
+            <br>
+            There are (1) danger spot, (2) blue spots, and (3) handicap spots.
+          </small>
+        </p>
+      </div>
+      <div class="radar-globe">
+        <div class="center"></div>
+      </div>
+      <div class="camera">
+        <span style="position: absolute; font-size: 20px; color: #fff; left: 30px; bottom: 150px; z-index: 9999999999;">[<span class="speed">0</span>] m/h</span>
+        <span style="position: absolute; font-size: 40px; color: red; left: 30px; bottom: 30px; z-index: 9999999999; visibility: hidden;" class="warning">!</span>
+      </div>
+      <div class="bottom-right-ui">
+        <button onclick="stop()" class="park">Brake (B)</button>
+        <select onchange="currentCamera = this.value - 0" class="camera" value="0">
+          <option value="0" title="1st camera">First person (0)</option>
+          <option value="1" title="2nd camera">Third person (1)</option>
+          <option value="2" title="3rd camera">Rear camera (2)</option>
+          <option value="3" title="4th camera">Second person (3)</option>
+        </select>
+        <br>
+        <button onclick="park()" class="park">Park (P)</button>
+        <select onchange="shift(this.value.replace('D', 'drive').replace('N', 'neutral').replace('R', 'reverse').replace('S', 'sport').replace('A', 'autopilot'))" class="shifter" value="D">
+          <option value="D" title="Drive">D</option>
+          <option value="N" title="Neutral">N</option>
+          <option value="R" title="Reverse">R</option>
+          <option value="S" title="Sport">S</option>
+          <option value="A" title="Autopilot">A</option>
+        </select>
+      </div>
+    </div>
+    <img id="rearcamera" src="images/rearcamera.png" style="position:absolute;display:none;width:100%;height:100%;margin:0;padding:0;left:0;top:0;bottom:0;right:0;border:none;" />
+    <script>
+      details = {
+        level: 1,
+        points: 0,
+        time: 75
+      };
+      let countdown = setInterval(() => {
+        if (details.time - 1 < 1) {
+          return GameOver("You ran out of time!"), clearInterval(countdown);
+        }
+        details.time += -1;
+        let minutes = Math.floor(details.time / 60);
+        let seconds = details.time - minutes * 60;
+        if (minutes.toString().length < 2) {
+          minutes = ("0" + minutes.toString());
+        }
+        if (seconds.toString().length < 2) {
+          seconds = ("0" + seconds.toString());
+        }
+        document.querySelector(".time").textContent = minutes + ":" + seconds;
+      }, 950);
+      if (!localStorage["points"]) localStorage.setItem("points", 0);
+      details.points = localStorage["points"] - 0;
+      details.level = (location.pathname.split("/").pop().match(/\d+/g).join("") - 0) + 1;
+      intersection = null;
+      didplaycrashsoundtwice = false;
+      window.addEventListener("load", (e) => {
+        document.querySelector(".level").textContent = details.level;
+        swal({
+          title: "How to play:",
+          text: `
+          ( \u1431 ): Drive towards direction
+          ( \u1438 ): Steer left
+          ( \u1433 ): Steer right
+          ( B ): Brake/Stop
+          ( M ): Toggle/Interact
+          ( ESC ): Cancel/Exit
+          ( TAB ): Switch camera
+          ( CURSOR ): Look around
+          ( ENTER ): Park car
+
+          Drive into the target spot and park to continue.
+          Do not crash or the game ends!
+          `,
+          closeOnEsc: false,
+          closeOnEnterKey: false,
+          closeOnClickOutside: false
+        }).then(function() {
+          PointerControls.isLocked = true;
+        });
+      });
+      debris = { mesh: new THREE.Mesh(), mixer: [], animations: [] };
+      new THREE.GLTFLoader().load("models/fx/debris.glb", (x) => {
+        debris.mesh = x.scene;
+        debris.animations = x.animations;
+        debris.mixer = new THREE.AnimationMixer(x.scene);
+      });
+      loading = document.querySelector(".loader-cover");
+      skidSound = document.querySelector("#skid-sound");
+      carCrashSound = document.querySelector("#car-crash-sound");
+      accelerateSound = document.querySelector("#accelerate-sound");
+      decelerateSound = document.querySelector("#decelerate-sound");
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, .1, 1000);
+      camera.fov = 60;
+      camera.updateProjectionMatrix();
+      const renderer = new THREE.WebGLRenderer({ preserveDrawingBuffer: true, antialias: true, powerPreference: "high-performance" });
+      renderer.setPixelRatio(window.devicePixelRatio / 1.3);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.useLegacyLights = false;
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.VSMShadowMap;
+      renderer.outputEncoding = THREE.sRGBEncoding;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      currentCamera = 0;
+      document.body.insertBefore(renderer.domElement, document.body.firstChild);
+      scene.add(camera);
+      new THREE.GLTFLoader().load("models/vehicles/mini_cooper.glb", (car) => {
+        window.car = car.scene;
+        scene.add(car.scene);
+        new THREE.GLTFLoader().load("models/characters/driver.glb", (e) => {
+          character = e.scene;
+        });
+      });
+      parkingStatus = {
+        space: null,
+        valid: false
+      };
+      new THREE.GLTFLoader().load("models/maps/level1.glb", (map) => {
+        map = map.scene;
+        window.map = map;
+        scene.add(map);
+        document.querySelector(".ui").style.visibility = "visible";
+        setTimeout(() => loading.remove(), 200);
+        let spaces = { reserved: [], valid: [] };
+        map.traverse(x => {
+          if (x.name.startsWith("ParkingSpaceCollider")) {
+            if (x.children[0].name.includes("ReservedParking")) spaces.reserved.push(x);
+            if (x.children[0].name.includes("ValidParking")) spaces.valid.push(x);
+          }
+        });
+        let chosenBlueSpots = [spaces.valid[Math.floor(Math.random() * spaces.valid.length)]];
+        chosenBlueSpots.forEach(x => {
+          spaces.valid[spaces.valid.indexOf(x)].name += "-blue";
+        });
+        setInterval(function() {
+          spaces.valid.forEach(space => {
+            if (collision(car, space)) {
+              parkingStatus.space = space.name.includes("-danger") ? "danger" : space.name.includes("-blue") ? "blue" : "valid";
+              parkingStatus.valid = true;
+            }
+          });
+          let invalidSpaces = 0;
+          spaces.valid.forEach(x => {
+            if (!collision(car, x)) {
+              invalidSpaces++;
+            }
+          });
+          if (invalidSpaces >= spaces.valid.length) {
+            parkingStatus.space = "invalid";
+            parkingStatus.valid = false;
+          }
+        }, 200);
+      });
+      function collision(e, B) {
+        let firstBB = new THREE.Box3().setFromObject(e);
+        let secondBB = new THREE.Box3().setFromObject(B);
+        return firstBB.intersectsBox(secondBB);
+      }
+      let clock = new THREE.Clock();
+      let raycaster = new THREE.Raycaster();
+      let raycastTargets = [];
+      let didCrash = false;
+      let center = new THREE.Vector2(0, 0);
+      outlinellock = 1;
+      collisionfollower = new THREE.Mesh(new THREE.BoxGeometry(6, 3, 3));
+      Notiflix.Notify.init({clickToClose:true,showOnlyTheLastOne:true,timeout:2000,info:{background:"#fff",textColor:"#333",notiflixIconColor:"#333"}});
+      carwasintheair = false;
+      function crash() {
+        if (didCrash) return;
+        didCrash = true;
+        stop();
+        PointerControls.isLocked = false;
+        debris.mesh.position.copy(car.position);
+        debris.mixer.clipAction(debris.animations[0]).loop = THREE.LoopOnce;
+        debris.mixer.clipAction(debris.animations[0]).play();
+        scene.add(debris.mesh);
+        let i = setInterval(function() {
+          let delta = clock.getDelta();
+          debris.mixer.update(delta);
+          car.rotateY(.1);
+          car.translateZ(carShiftedType == "reverse" ? .05 : -.05);
+          camera.fov += (Math.floor(Math.random() * 2) == 0 ? -Math.floor(Math.random() * 5) : Math.floor(Math.random() * 5));
+          camera.updateProjectionMatrix();
+        });
+        setTimeout(() => (car.rotateX(.1), camera.fov = 60, camera.updateProjectionMatrix(), clearInterval(i)), 2000);
+        carCrashSound.play();
+        car.rotateX(-.1);
+        setTimeout(function() {
+          return GameOver("You crashed!");
+        }, 500);
+        setTimeout(function() {
+          scene.remove(debris.mesh);
+        }, 1500);
+      }
+      isMoving = false;
+      function GameOver(f) {
+        swal({
+          title: "GAME OVER",
+          text: f || "You lose",
+          buttons: ["Close", "Try Again (10 PTS)"],
+          closeOnEsc: false,
+          closeOnClickOutside: false
+        }).then(function(e) {
+          if (e) {
+            return window.location.reload();
+          }
+          top.location.replace("/");
+        });
+        if (details.points < 10) document.querySelectorAll(".swal-button")[1].disabled = "disabled";
+      }
+      carAcceleration = 0;
+      carShiftedType = "drive";
+      function animate() {
+        carAcceleration <= 0 ? carAcceleration = 0 : (carAcceleration += -.001);
+        typeof character != "undefined" && (((function() { let k = car.clone(); k.rotation.y += Math.PI / 2; character.position.copy(car.position), character.rotation.copy(k.rotation), character.updateMatrix(), character.translateX(-.8), character.translateY(-2), character.translateZ(.5), character.scale.set(1.4,1.4,1.4) })(), (currentCamera == 1) ? (!(scene.children.indexOf(character) > -1) && scene.add(character)) : ((scene.children.indexOf(character) > -1 && scene.remove(character)))));
+        camera.updateMatrixWorld();
+        document.querySelector(".radar-globe").querySelector(".center").style.transform = `rotate(${-THREE.MathUtils.radToDeg(car.rotation.y)}deg)`;
+        document.querySelector(".speed").textContent = Math.abs((carAcceleration * 100).toFixed(0));
+        document.querySelector(".shifter").value = carShiftedType[0].toUpperCase().trim();
+        if (currentCamera != 2) {
+          document.querySelector("#rearcamera").style.display = "none";
+          renderer.setPixelRatio(window.devicePixelRatio / 1.3);
+        }
+        if (currentCamera == 0) {
+          camera.position.set(car.position.x, car.position.y + .3, car.position.z);
+        } else if (currentCamera == 1) {
+          camera.position.copy(car.position);
+          camera.rotation.copy(car.rotation);
+          camera.rotateY(-Math.PI / 2);
+          camera.translateZ(20);
+          camera.translateY(10);
+          camera.lookAt(car.position);
+        } else if (currentCamera == 3) {
+          camera.position.set(0, 50, 0);
+          camera.rotation.set(-Math.PI / 2, 0, 0);
+        } else {
+          document.querySelector("#rearcamera").style.display = "block";
+          renderer.setPixelRatio(.2);
+          let j = car.clone();
+          j.rotateY(Math.PI / 2);
+          camera.position.copy(car.position);
+          camera.rotation.copy(j.rotation);
+          camera.updateMatrix();
+          camera.translateZ(-15);
+        }
+        if (intersection != null && intersection.object.name == "C-Shifter") {
+          (document.querySelector("#NotiflixNotifyWrap") && document.querySelector("#NotiflixNotifyWrap").textContent.includes("Shifter")) || Notiflix.Notify.info("Shifter knob ('M' key to shift)");
+        } else if (intersection != null && intersection.object.name == "C-Stereo") {
+          (document.querySelector("#NotiflixNotifyWrap") && document.querySelector("#NotiflixNotifyWrap").textContent.includes("Toggle")) || Notiflix.Notify.info("Toggle camera ('M' key to view)");
+        }
+        typeof map != "undefined" && map.traverse(x => {
+          if (x.name.startsWith("Collider")) {
+            function checkDistance() {
+              return new Promise(function(resolve, reject) {
+                let check = setInterval(function() {
+                  if (distance != null) {
+                    return resolve(distance), clearInterval(check);
+                  }
+                }, 50);
+              });
+            }
+            let distance = null;
+            (function() {
+              let e = new THREE.Mesh(new THREE.BoxGeometry(10, 10, 10));
+              e.position.copy(car.position);
+              e.rotation.copy(car.rotation);
+              let collide = setInterval(function() {
+                if (collision(e, x)) return distance = e.position.distanceTo(car.position), e.geometry.dispose(), clearInterval(collide);
+                e.translateZ(1);
+              }, 50);
+            })();
+            checkDistance().then(d => {
+              if (d <= 15) {
+                document.querySelector(".camera").querySelector(".warning").style.visibility = "visible";
+                document.querySelector(".camera").querySelector(".warning").style.animation = "blink 1s linear infinite";
+              }
+            });
+            if (collision(x, car)) crash(), x.geometry.dispose();
+          }
+        });
+        if (currentCamera == 2 && didCrash) {
+          swal({
+            text: "Rear camera is obstructed. Cannot view"
+          });
+          currentCamera = 3;
+        }
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+      car = new THREE.Mesh();
+      animate();
+      isDrivingForward = false;
+      isDrivingBackward = false;
+      isDrivingLeft = false;
+      isDrivingRight = false;
+      directionalLight = new THREE.DirectionalLight(0xffffff, 3);
+      scene.add(directionalLight);
+      directionalLight.position.set(-5, 25, 10);
+      directionalLight.castShadow = true;
+      directionalLight.shadow.camera.near = 0.01;
+      directionalLight.shadow.camera.far = 500;
+      directionalLight.shadow.camera.right = 30;
+      directionalLight.shadow.camera.left = -30;
+      directionalLight.shadow.camera.top = 30;
+      directionalLight.shadow.camera.bottom = -30;
+      directionalLight.shadow.mapSize.width = 1024;
+      directionalLight.shadow.mapSize.height = 1024;
+      directionalLight.shadow.radius = 4;
+      directionalLight.shadow.bias = -0.00006;
+      scene.background = new THREE.Color(0x88ccee);
+      scene.fog = new THREE.Fog(0xaacceee, 0, 1000);
+      const _euler=new THREE.Euler(0,0,0,"YXZ"),_vector=new THREE.Vector3,_changeEvent={type:"change"},_lockEvent={type:"lock"},_unlockEvent={type:"unlock"},_PI_2=Math.PI/2;class PointerLockControls extends THREE.EventDispatcher{constructor(e,t){super(),void 0===t&&(console.warn('THREE.PointerLockControls: The second parameter "domElement" is now mandatory.'),t=document.body),this.domElement=t,this.isLocked=!1,this.minPolarAngle=0,this.maxPolarAngle=Math.PI,this.pointerSpeed=1;const o=this;function n(t){if(!1===o.isLocked)return;const n=t.movementX||t.mozMovementX||t.webkitMovementX||0,r=t.movementY||t.mozMovementY||t.webkitMovementY||0;_euler.setFromQuaternion(e.quaternion),_euler.y-=.002*n*o.pointerSpeed,_euler.x-=.002*r*o.pointerSpeed,_euler.x=Math.max(_PI_2-o.maxPolarAngle,Math.min(_PI_2-o.minPolarAngle,_euler.x)),e.quaternion.setFromEuler(_euler),o.dispatchEvent(_changeEvent)}function r(){o.domElement.ownerDocument.pointerLockElement===o.domElement?(o.dispatchEvent(_lockEvent),o.isLocked=!0):(o.dispatchEvent(_unlockEvent),o.isLocked=!1)}function c(){console.error("THREE.PointerLockControls: Unable to use Pointer Lock API")}this.connect=function(){o.domElement.ownerDocument.addEventListener("mousemove",n),o.domElement.ownerDocument.addEventListener("pointerlockchange",r),o.domElement.ownerDocument.addEventListener("pointerlockerror",c)},this.disconnect=function(){o.domElement.ownerDocument.removeEventListener("mousemove",n),o.domElement.ownerDocument.removeEventListener("pointerlockchange",r),o.domElement.ownerDocument.removeEventListener("pointerlockerror",c)},this.dispose=function(){this.disconnect()},this.getObject=function(){return e},this.getDirection=function(){const t=new THREE.Vector3(0,0,-1);return function(o){return o.copy(t).applyQuaternion(e.quaternion)}}(),this.moveForward=function(t){_vector.setFromMatrixColumn(e.matrix,0),_vector.crossVectors(e.up,_vector),e.position.addScaledVector(_vector,t)},this.moveRight=function(t){_vector.setFromMatrixColumn(e.matrix,0),e.position.addScaledVector(_vector,t)},this.lock=function(){this.domElement.requestPointerLock()},this.unlock=function(){o.domElement.ownerDocument.exitPointerLock()},this.connect()}}
+      const PointerControls = new PointerLockControls(camera, renderer.domElement);
+      PointerControls.temporaryLock = function() {
+        PointerControls.isLocked = false;
+        window.onclick = function() {
+          PointerControls.isLocked = true;
+          window.onclick = null;
+        };
+      }
+      PointerControls.pointerSpeed = 2;
+      function onWindowResize(){camera.aspect=window.innerWidth/window.innerHeight,camera.updateProjectionMatrix(),renderer.setSize(window.innerWidth,window.innerHeight)/*,document.querySelector("canvas").style.marginLeft=-((document.querySelector("canvas").style.width.split("px")[0]-0)/2)+"px",document.querySelector("canvas").style.left="50%",document.querySelector("canvas").style.position="relative"*/}window.addEventListener("resize",onWindowResize,!1);
+      currentMapCoordinates = [27.5, 0, -30]
+      function parkDetector() {
+        if (parkingStatus.space == "reserved" || !parkingStatus.valid) {
+          return false;
+        } else if (/valid|danger|blue/gi.test(parkingStatus.space) && parkingStatus.valid) {
+          return true;
+        }
+      }
+      function drive(direction) {
+        if (direction == "forward") {
+          carAcceleration >= .2 || (carAcceleration += .01);
+          car.translateX(carAcceleration);
+          accelerateSound.play();
+          decelerateSound.pause();
+        }
+        if (direction == "backward") {
+          carAcceleration >= .2 || (carAcceleration += .01);
+          car.translateX(-carAcceleration);
+          accelerateSound.play();
+          decelerateSound.pause();
+        }
+        if (direction == "left" && isMoving) {
+          car.rotation.y += .01;
+        }
+        if (direction == "right" && isMoving) {
+          car.rotation.y += -.01;
+        }
+      }
+      setInterval(function() {
+        if (isDrivingForward) {
+          drive("forward");
+        }
+        if (isDrivingBackward) {
+          drive("backward");
+        }
+        if (isDrivingLeft) {
+          drive("left");
+        }
+        if (isDrivingRight) {
+          drive("right");
+        }
+      }, 20);
+      setInterval(function() {
+        typeof car.getObjectByName("C-Shifter") != "undefined" && (raycastTargets.indexOf(car.getObjectByName("C-Shifter")) > -1 || raycastTargets.push(car.getObjectByName("C-Shifter")));
+        typeof car.getObjectByName("C-Stereo") != "undefined" && (raycastTargets.indexOf(car.getObjectByName("C-Stereo")) > -1 || raycastTargets.push(car.getObjectByName("C-Stereo")));
+        raycaster.setFromCamera(center, camera);
+        let intersections = raycaster.intersectObjects(raycastTargets);
+        intersection = intersections.length > 0 ? intersections[0] : null;
+      }, 300);
+      function shift(e) {
+        document.querySelector(".shifter").size = 1;
+        document.querySelector(".shifter").style.height = "";
+        document.querySelector(".shifter").style.position = "";
+        document.querySelector(".shifter").style.marginTop = "";
+        carShiftedType = e;
+      }
+      camera.rotation.y = -Math.PI / 2;
+      document.addEventListener("keydown", (e) => {
+        if (e.repeat) {
+          return;
+        }
+        if (e.key == "ArrowUp") {
+          isMoving = true;
+          carShiftedType == "drive" ? isDrivingForward = true : isDrivingBackward = true;
+        }
+        if (e.key == "ArrowDown") {
+          // isDrivingBackward = true;
+        }
+        if (e.key == "ArrowLeft") {
+          isDrivingLeft = true;
+          // carShiftedType == "drive" ? isDrivingForward = true : isDrivingBackward = true;
+        }
+        if (e.key == "ArrowRight") {
+          isDrivingRight = true;
+          // carShiftedType == "drive" ? isDrivingForward = true : isDrivingBackward = true;
+        }
+        if (e.key == "m" && intersection.object.name == "C-Shifter") {
+          document.querySelector(".shifter").size = 5;
+          document.querySelector(".shifter").style.height = "160px";
+          document.querySelector(".shifter").style.position = "absolute";
+          document.querySelector(".shifter").style.marginTop = "-105px";
+          PointerControls.temporaryLock();
+        } else if (e.key == "m" && intersection.object.name == "C-Stereo") {
+          currentCamera = 2;
+        }
+        if (e.key == "b") {
+          stop();
+        }
+        if (e.key == "Enter") {
+          if (swal.getState().isOpen) {
+            swal.close();
+          } else park();
+        }
+        if (e.key == "Escape" && currentCamera == 2) {
+          currentCamera = 0;
+          camera.rotation.set(0, -Math.PI/2, 0);
+        }
+        if (e.key == "Tab") {
+          e.preventDefault();
+          currentCamera >= 3 ? currentCamera = 0 : currentCamera++;
+          currentCamera == 0 && (camera.rotation.set(0, -Math.PI/2, 0));
+        }
+      });
+      isStopped = false;
+      function stop() {
+        skidSound.play();
+        isStopped = true;
+        setTimeout(function() { isStopped = false }, 100);
+        carAcceleration = 0;
+      }
+      document.addEventListener("keyup", (e) => {
+        if (e.key == "ArrowUp") {
+          let t = .2;
+          let v = 0;
+          carShiftedType == "drive" ? isDrivingForward = false : isDrivingBackward = false;
+          let i = setInterval(function() {
+            t += -.0005;
+            (t <= 0 || isStopped) && (clearInterval(i), isMoving = false);
+            (t <= .05 && setInterval(function() { if (car.position.y > 0) { carwasintheair = true; v >= .001 || (v += .0001); car.position.y += -v } else if (carwasintheair) { carwasintheair = false; (()=>{let isup=false,isdown=true;let i=setInterval(()=>{!isup?(camera.rotateX(.05),isup=true,isdown=false):(camera.rotateX(-.05),isup=false,isdown=true)});setTimeout(()=>clearInterval(i),200)})(), carCrashSound.pause(), carCrashSound.currentTime = 0, carCrashSound.play() } }));
+            car.translateX(carShiftedType == "drive"? t : -t);
+          });
+          accelerateSound.pause();
+          accelerateSound.currentTime = 0;
+          decelerateSound.play();
+          let l = setInterval(function() { !isMoving && (decelerateSound.pause(), decelerateSound.currentTime = 0) });
+          setTimeout(function() {
+            clearInterval(l);
+          }, 1500);
+        }
+        if (e.key == "ArrowDown") {
+          // isDrivingBackward = false;
+        }
+        if (e.key == "ArrowLeft") {
+          isDrivingLeft = false;
+          // carShiftedType == "drive" ? isDrivingForward = false : isDrivingBackward = false;
+        }
+        if (e.key == "ArrowRight") {
+          isDrivingRight = false;
+          // carShiftedType == "drive" ? isDrivingForward = false : isDrivingBackward = false;
+        }
+      });
+      function park() {
+        if (parkDetector() && (Math.abs(THREE.MathUtils.radToDeg(car.rotation.y)) >= 75 && Math.abs(THREE.MathUtils.radToDeg(car.rotation.y)) <= 105)) {
+          if (parkingStatus.space == "danger") {
+            let messages = ["Oh no!", "Oops...", "Game over"];
+            return swal({
+              icon: "error",
+              title: messages[Math.floor(Math.random() * messages.length)],
+              text: "You parked in the danger spot. You will return to the main menu.",
+              button: "Close",
+              closeOnClickOutside: true,
+              closeOnEnterKey: true
+            }).then(function() {
+              parent.location.reload();
+            });
+          }
+          if (parkingStatus.space == "blue") {
+            let messages = ["Wow!", "Amazing!", "Congrats!"];
+            return swal({
+              icon: "images/icons/swal/success.blue.png",
+              title: messages[Math.floor(Math.random() * messages.length)],
+              text: "You parked in a blue spot! You earned an extra point!",
+              button: "Next level",
+              closeOnClickOutside: true,
+              closeOnEnterKey: true
+            }).then(function() {
+              localStorage.setItem("points", details.points + 2);
+              location.replace(LevelMapping.nextLevel);
+            });
+          }
+          let messages = ["Good!", "Good job!", "Amazing!", "Cool!"];
+          swal({
+            icon: "success",
+            title: messages[Math.floor(Math.random() * messages.length)],
+            text: "You parked! Click Next to continue.",
+            button: "Next level",
+            closeOnClickOutside: true,
+            closeOnEnterKey: true
+          }).then(function() {
+            localStorage.setItem("points", details.points + 1);
+            location.replace(LevelMapping.nextLevel);
+          });
+          document.querySelector(".swal-button").style = "background:#6cc22e!important";
+        } else {
+          if (parkingStatus.space == "reserved") {
+            let messages = ["Oh no!", "Oops...", "Game over"];
+            swal({
+              icon: "images/icons/swal/error.blue.png",
+              title: messages[Math.floor(Math.random() * messages.length)],
+              text: "You parked in a handicap spot. You will return to the main menu.",
+              buttons: ["Close", "Continue (20 points)"],
+              closeOnClickOutside: true,
+              closeOnEnterKey: true
+            }).then(function(e) {
+              if (!e) return parent.location.reload();
+              if (points < 20) return;
+              localStorage.setItem("points", details.points - 20);
+              location.replace(LevelMapping.nextLevel);
+            });
+            if (details.points < 20) document.querySelectorAll(".swal-button")[1].disabled = "disabled";
+          } else {
+            let messages = ["Not there yet!", "Keep going!", "Almost there..."];
+            swal({
+              icon: "error",
+              title: messages[Math.floor(Math.random() * messages.length)],
+              text: "Try parking closer to the target space.",
+              button: "Close",
+              closeOnClickOutside: true,
+              closeOnEnterKey: true
+            });
+          }
+        }
+      }
+      setInterval(function() {
+        if (currentCamera == 0) {
+          scene.traverse(x => (x.castShadow = false, x.receiveShadow = false));
+          renderer.shadowMap.needsUpdate = true;
+        } else {
+          scene.traverse(x => (x.name.includes("Collider") || (x.castShadow = true, x.receiveShadow = true)));
+        }
+      }, 1000);
+      (function() {
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, .1, 1000);
+        camera.fov = 60;
+        camera.updateProjectionMatrix();
+        const renderer = new THREE.WebGLRenderer({ preserveDrawingBuffer: true, antialias: true });
+        renderer.setSize(200, 150);
+        renderer.useLegacyLights = false;
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.setPixelRatio(.4);
+        renderer.domElement.className = "backup-camera";
+        document.querySelector(".ui").querySelector(".camera").appendChild(renderer.domElement);
+        function animate() {
+          let j = car.clone();
+          j.rotateY(Math.PI / 2);
+          camera.position.copy(car.position);
+          camera.rotation.copy(j.rotation);
+          camera.updateMatrix();
+          camera.translateZ(-15);
+          renderer.render(scene, camera);
+          requestAnimationFrame(animate);
+        }
+        animate();
+      })();
+    </script>
+  </body>
+</html>
