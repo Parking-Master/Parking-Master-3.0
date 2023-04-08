@@ -2,13 +2,19 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
     <title>Document</title>
     <style>
-      body {
+      html, body {
         margin: 0;
         overflow: hidden !important;
         font-family: Arial, Helvetica, sans-serif;
+      }
+      * {
+        user-select: none !important;
+        -webkit-user-select: none !important;
+        -moz-user-select: none !important;
+        -ms-user-select: none !important;
       }
       .pointer {
         position: absolute;
@@ -76,9 +82,8 @@
         background-size: .5px 100%;
         background-repeat: no-repeat;
         background-position: center center;
-        border-right: 5px solid blue;
-        border-left: 5px solid blue;
-        outline: 2px dotted #333;
+        border-right: 5px solid #333;
+        border-left: 5px solid #333;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -105,6 +110,21 @@
       .ui .description * {
         color: #efefef;
       }
+      .bottom-center-ui {
+        position: absolute;
+        left: 50%;
+        width: 100%;
+        margin-left: -50%;
+        bottom: 20px;
+        display: flex;
+        align-items: center;
+        text-align: center;
+        justify-content: center;
+      }
+      .bottom-center-ui button {
+        width: 50px !important;
+        text-align: center !important;
+      }
     </style>
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
   </head>
@@ -120,6 +140,8 @@
     <script src="https://fps3.ml/js/three.min.js"></script>
     <script src="https://fps3.ml/js/GLTFLoader.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/notiflix/Notiflix@latest/dist/notiflix-aio-3.2.5.min.js"></script>
+    <script src="https://fps3.ml/js/PointerLockControls.min.js"></script>
+    <script src="https://fps3.ml/js/TouchControls.min.js"></script>
     <div class="pointer"></div>
     <div class="ui">
       <img class="vignette" src="images/vignette.png" style="transition: opacity .15s; width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; bottom: 0; right: 0; margin: 0; padding: 0;">
@@ -129,7 +151,7 @@
           <small>
             Use the navigation controls to park in the designated spot.
             <br>
-            There are (1) danger spot, (2) blue spots, and (3) handicap spots.
+            There are (<span class="danger-spots">1</span>) danger spots, (<span class="blue-spots">2</span>) blue spots, and (<span class="reserved-spots">3</span>) handicap spots.
           </small>
         </p>
       </div>
@@ -139,6 +161,11 @@
       <div class="camera">
         <span style="position: absolute; font-size: 20px; color: #fff; left: 30px; bottom: 150px; z-index: 9999999999;">[<span class="speed">0</span>] m/h</span>
         <span style="position: absolute; font-size: 40px; color: red; left: 30px; bottom: 30px; z-index: 9999999999; visibility: hidden;" class="warning">!</span>
+      </div>
+      <div class="bottom-center-ui">
+        <button onmousedown="document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }))" onmouseup="document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowLeft' }))" onmouseout="document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowLeft' }))" ontouchstart="document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }))" ontouchend="document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowLeft' }))" ontouchcancel="document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowLeft' }))" class="turn-left">&lt;</button>
+        <button onmousedown="document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }))" onmouseup="document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowUp' }))" onmouseout="document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowUp' }))" ontouchstart="document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }))" ontouchend="document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowUp' }))" ontouchcancel="document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowUp' }))" class="drive">^</button>
+        <button onmousedown="document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }))" onmouseup="document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowRight' }))" onmouseout="document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowRight' }))" ontouchstart="document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }))" ontouchend="document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowRight' }))" ontouchcancel="document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowRight' }))" class="turn-right">&gt;</button>
       </div>
       <div class="bottom-right-ui">
         <button onclick="stop()" class="park">Brake (B)</button>
@@ -233,6 +260,7 @@
         }).then(function() {
           pauseCountdown = false;
           PointerControls.isLocked = true;
+          TouchControls.isLocked = true;
         });
       });
       debris = { mesh: new THREE.Mesh(), mixer: [], animations: [] };
@@ -286,6 +314,7 @@
             if (x.children[0].name.includes("ValidParking")) spaces.valid.push(x);
           }
         });
+        document.querySelector(".reserved-spots").textContent = spaces.reserved.length;
         spaces.valid.forEach(x => {
           if (Math.floor(Math.random() * 10) == 0) {
             new THREE.GLTFLoader().load("models/fx/coin.glb", function(coin) {
@@ -309,10 +338,12 @@
         chosenDangerSpots.forEach(x => {
           spaces.valid[spaces.valid.indexOf(x)].name += "-danger";
         });
+        document.querySelector(".danger-spots").textContent = chosenDangerSpots.length;
         let chosenBlueSpots = [spaces.valid[Math.floor(Math.random() * spaces.valid.length)], spaces.valid[Math.floor(Math.random() * spaces.valid.length)]];
         chosenBlueSpots.forEach(x => {
           spaces.valid[spaces.valid.indexOf(x)].name += "-blue";
         });
+        document.querySelector(".blue-spots").textContent = chosenBlueSpots.length
         setInterval(function() {
           spaces.valid.forEach(space => {
             if (collision(car, space)) {
@@ -359,6 +390,7 @@
         didCrash = true;
         stop();
         PointerControls.isLocked = false;
+        TouchControls.isLocked = false;
         debris.mesh.position.copy(car.position);
         debris.mixer.clipAction(debris.animations[0]).loop = THREE.LoopOnce;
         debris.mixer.clipAction(debris.animations[0]).play();
@@ -366,7 +398,7 @@
         let i = setInterval(function() {
           let delta = clock.getDelta();
           debris.mixer.update(delta);
-          car.rotateY(.1);
+          car.rotateY(.04);
           car.translateZ(transmission == "reverse" ? .05 : -.05);
           camera.fov += (Math.floor(Math.random() * 2) == 0 ? -Math.floor(Math.random() * 5) : Math.floor(Math.random() * 5));
           camera.updateProjectionMatrix();
@@ -498,16 +530,19 @@
       directionalLight.shadow.bias = -0.00006;
       scene.background = new THREE.Color(0x88ccee);
       scene.fog = new THREE.Fog(0xaacceee, 0, 1000);
-      const _euler=new THREE.Euler(0,0,0,"YXZ"),_vector=new THREE.Vector3,_changeEvent={type:"change"},_lockEvent={type:"lock"},_unlockEvent={type:"unlock"},_PI_2=Math.PI/2;class PointerLockControls extends THREE.EventDispatcher{constructor(e,t){super(),void 0===t&&(console.warn('THREE.PointerLockControls: The second parameter "domElement" is now mandatory.'),t=document.body),this.domElement=t,this.isLocked=!1,this.minPolarAngle=0,this.maxPolarAngle=Math.PI,this.pointerSpeed=1;const o=this;function n(t){if(!1===o.isLocked)return;const n=t.movementX||t.mozMovementX||t.webkitMovementX||0,r=t.movementY||t.mozMovementY||t.webkitMovementY||0;_euler.setFromQuaternion(e.quaternion),_euler.y-=.002*n*o.pointerSpeed,_euler.x-=.002*r*o.pointerSpeed,_euler.x=Math.max(_PI_2-o.maxPolarAngle,Math.min(_PI_2-o.minPolarAngle,_euler.x)),e.quaternion.setFromEuler(_euler),o.dispatchEvent(_changeEvent)}function r(){o.domElement.ownerDocument.pointerLockElement===o.domElement?(o.dispatchEvent(_lockEvent),o.isLocked=!0):(o.dispatchEvent(_unlockEvent),o.isLocked=!1)}function c(){console.error("THREE.PointerLockControls: Unable to use Pointer Lock API")}this.connect=function(){o.domElement.ownerDocument.addEventListener("mousemove",n),o.domElement.ownerDocument.addEventListener("pointerlockchange",r),o.domElement.ownerDocument.addEventListener("pointerlockerror",c)},this.disconnect=function(){o.domElement.ownerDocument.removeEventListener("mousemove",n),o.domElement.ownerDocument.removeEventListener("pointerlockchange",r),o.domElement.ownerDocument.removeEventListener("pointerlockerror",c)},this.dispose=function(){this.disconnect()},this.getObject=function(){return e},this.getDirection=function(){const t=new THREE.Vector3(0,0,-1);return function(o){return o.copy(t).applyQuaternion(e.quaternion)}}(),this.moveForward=function(t){_vector.setFromMatrixColumn(e.matrix,0),_vector.crossVectors(e.up,_vector),e.position.addScaledVector(_vector,t)},this.moveRight=function(t){_vector.setFromMatrixColumn(e.matrix,0),e.position.addScaledVector(_vector,t)},this.lock=function(){this.domElement.requestPointerLock()},this.unlock=function(){o.domElement.ownerDocument.exitPointerLock()},this.connect()}}
       const PointerControls = new PointerLockControls(camera, renderer.domElement);
+      const TouchControls = new THREE.TouchControls(camera, document.body);
       PointerControls.temporaryLock = function() {
         PointerControls.isLocked = false;
+        TouchControls.isLocked = false;
         window.onclick = function() {
           PointerControls.isLocked = true;
+          TouchControls.isLocked = true;
           window.onclick = null;
         };
       }
       PointerControls.pointerSpeed = 2;
+      TouchControls.speed = 3;
       function onWindowResize(){camera.aspect=window.innerWidth/window.innerHeight,camera.updateProjectionMatrix(),renderer.setSize(window.innerWidth,window.innerHeight)/*,document.querySelector("canvas").style.marginLeft=-((document.querySelector("canvas").style.width.split("px")[0]-0)/2)+"px",document.querySelector("canvas").style.left="50%",document.querySelector("canvas").style.position="relative"*/}window.addEventListener("resize",onWindowResize,!1);
       currentMapCoordinates = [27.5, 0, -30]
       function parkDetector() {
@@ -626,16 +661,11 @@
             isMoving = true;
             transmission == "drive" ? isDrivingForward = true : isDrivingBackward = true;
           }
-          if (e.key == "ArrowDown") {
-            // isDrivingBackward = true;
-          }
           if (e.key == "ArrowLeft") {
             isDrivingLeft = true;
-            // transmission == "drive" ? isDrivingForward = true : isDrivingBackward = true;
           }
           if (e.key == "ArrowRight") {
             isDrivingRight = true;
-            // transmission == "drive" ? isDrivingForward = true : isDrivingBackward = true;
           }
         }
         if (e.key == "m" && intersection.object.name == "C-Shifter") {
@@ -692,17 +722,12 @@
               clearInterval(l);
             }, 1500);
           }
-          if (e.key == "ArrowDown") {
-            // isDrivingBackward = false;
-          }
-          if (e.key == "ArrowLeft") {
-            isDrivingLeft = false;
-            // transmission == "drive" ? isDrivingForward = false : isDrivingBackward = false;
-          }
-          if (e.key == "ArrowRight") {
-            isDrivingRight = false;
-            // transmission == "drive" ? isDrivingForward = false : isDrivingBackward = false;
-          }
+        }
+        if (e.key == "ArrowLeft") {
+          isDrivingLeft = false;
+        }
+        if (e.key == "ArrowRight") {
+          isDrivingRight = false;
         }
       });
       function park() {
