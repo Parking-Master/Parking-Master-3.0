@@ -142,6 +142,7 @@
     <audio id="decelerate-sound" src="sounds/decelerate.mp3"></audio>
     <audio id="car-crash-sound" src="sounds/car_crash.mp3"></audio>
     <audio id="skid-sound" src="sounds/skid.mp3"></audio>
+    <script src="scripts/GamepadControls.js"></script>
     <script src="scripts/LevelMapping.js"></script>
     <script src="https://fps3.ml/js/three.min.js"></script>
     <script src="https://fps3.ml/js/GLTFLoader.min.js"></script>
@@ -197,7 +198,7 @@
       details = {
         level: 1,
         points: 0,
-        time: 90
+        time: 75
       };
 
       THREE.Sound = function Sound(source = null, object = new THREE.Object3D, callback = function(sound) {}, preserve3d = true, volume = 5, loop) {
@@ -661,10 +662,18 @@
             transmission != "reverse" ? isDrivingForward = true : isDrivingBackward = true;
           }
           if (e.key == "ArrowLeft") {
-            isDrivingLeft = true;
+            if (transmission == "reverse") {
+              isDrivingRight = true;
+            } else {
+              isDrivingLeft = true;
+            }
           }
           if (e.key == "ArrowRight") {
-            isDrivingRight = true;
+            if (transmission == "reverse") {
+              isDrivingLeft = true;
+            } else {
+              isDrivingRight = true;
+            }
           }
         }
         if (e.key == "m" && intersection.object.name == "C-Shifter") {
@@ -723,10 +732,18 @@
           }
         }
         if (e.key == "ArrowLeft") {
-          isDrivingLeft = false;
+          if (transmission == "reverse") {
+            isDrivingRight = false;
+          } else {
+            isDrivingLeft = false;
+          }
         }
         if (e.key == "ArrowRight") {
-          isDrivingRight = false;
+          if (transmission == "reverse") {
+            isDrivingLeft = false;
+          } else {
+            isDrivingRight = false;
+          }
         }
       });
       function park() {
