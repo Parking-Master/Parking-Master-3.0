@@ -198,7 +198,7 @@
       details = {
         level: 1,
         points: 0,
-        time: 90
+        time: 60
       };
 
       THREE.Sound = function Sound(source = null, object = new THREE.Object3D, callback = function(sound) {}, preserve3d = true, volume = 5, loop) {
@@ -760,7 +760,7 @@
         }
       });
       function park() {
-        if (parkDetector() && (Math.abs(THREE.MathUtils.radToDeg(car.rotation.y)) >= 0 && Math.abs(THREE.MathUtils.radToDeg(car.rotation.y)) <= 30)) {
+        if (parkDetector() && (Math.abs(THREE.MathUtils.radToDeg(car.rotation.y)) >= 75 && Math.abs(THREE.MathUtils.radToDeg(car.rotation.y)) <= 105)) {
           if (parkingStatus.space == "danger") {
             let messages = ["Oh no!", "Oops...", "Game over"];
             return swal({

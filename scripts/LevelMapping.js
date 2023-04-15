@@ -3,7 +3,7 @@
   LevelMapping = {};
   for (let i = 0; i < 50; i++) {
     if (i % 3 === 0 && i != 0) {
-      levels.push("bonus/bonus" + (i / 3));
+      levels.push("bonus/bonus" + ((i / 3) - 1));
     } else levels.push("level" + i);
   }
   console.log(levels);
