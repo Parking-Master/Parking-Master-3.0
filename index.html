@@ -63,6 +63,7 @@
         transition: transform .1s;
         white-space: nowrap;
         color: #333 !important;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.24);
       }
       button:hover {
         transform: scale(1.1);
@@ -216,7 +217,7 @@
   </head>
   <body>
     <style>body,html,*{cursor:none!important}#follower #circle1,#follower #circle2{cursor:none!important;position:absolute;border-radius:50%;height:0;width:0;margin-top:0;margin-left:0}*,body,html{cursor:none!important}#follower{position:absolute;top:50%;left:50%}#follower #circle1{-webkit-animation:2s infinite pulse;animation:2s infinite pulse;background:#fff}#follower #circle2{-webkit-animation:4s infinite pulse;animation:4s infinite pulse;background:rgba(0,0,0,.8)}@-moz-keyframes pulse{0%,100%{opacity:.2;height:1em;width:1em;margin-top:-.5em;margin-left:-.5em}50%{opacity:.9;height:3em;width:3em;margin-top:-1.5em;margin-left:-1.5em}}@-webkit-keyframes pulse{0%,100%{opacity:.2;height:1em;width:1em;margin-top:-.5em;margin-left:-.5em}50%{opacity:.9;height:3em;width:3em;margin-top:-1.5em;margin-left:-1.5em}}@-o-keyframes pulse{0%,100%{opacity:.2;height:1em;width:1em;margin-top:-.5em;margin-left:-.5em}50%{opacity:.9;height:3em;width:3em;margin-top:-1.5em;margin-left:-1.5em}}@keyframes pulse{0%,100%{opacity:.2;height:1em;width:1em;margin-top:-.5em;margin-left:-.5em}50%{opacity:.9;height:3em;width:3em;margin-top:-1.5em;margin-left:-1.5em}}</style>
-    <div id="follower" style="pointer-events:none;z-index:9997">
+    <div id="follower" style="pointer-events:none;z-index:9997" class="cursor">
       <div id="circle1"></div>
       <div id="circle2"></div>
     </div>
@@ -231,9 +232,9 @@
     <div id="link-container">
       <a href="downloads">DOWNLOAD</a>
       <br>
-      <a href="downloads">SUPPORT</a>
+      <a href="support.html">SUPPORT</a>
       <br>
-      <a href="downloads">CONTACT</a>
+      <a href="contact.html">CONTACT</a>
     </div>
     <img src="images/vrs.png" id="vrs">
     <div style="margin-top:200px">
@@ -251,7 +252,10 @@
         if (document.readyState == "complete") {
           document.querySelector(".loader").remove();
         }
-      })
+        if (matchMedia("(pointer: coarse)").matches) {
+          document.querySelector(".cursor").style.display = "none";
+        }
+      });
       Parse.initialize("sixz0SUXueXB5ag6LNjX7RcHk3KAQI8UCA3shKwh","09yqaddyyjykuIyeBHlNyTTnnXTS73ZryQNaB0vp"),Parse.serverURL="https://parseapi.back4app.com/";
       function performance() {
         let container = document.createElement("div");

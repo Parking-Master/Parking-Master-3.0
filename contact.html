@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact us</title>
+    <style>
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+        font-weight: 100 !important;
+      }
+      input[type=text], select, textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+        margin-top: 6px;
+        margin-bottom: 16px;
+        resize: vertical;
+      }
+      button#submit {
+        background-color: #444;
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button#submit:hover {
+        background-color: #333;
+      }
+      .container {
+        position: relative;
+        background-color: #f2f2f2;
+        padding: 20px;
+        width: 50%;
+      }
+      a {
+        color: #333 !important;
+        text-decoration: none;
+        border-bottom: 1px solid currentColor;
+      }
+      button {
+        background: #efefef;
+        border: .5px solid #333;
+        padding: 5px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #ddd;
+      }
+      .swal-modal {
+        border-radius: 0;
+      }
+      .swal-button {
+        border-radius: 0;
+        background: #333 !important;
+        box-shadow: none !important;
+      }
+    </style>
+    <script src="https://simplemailer.loca.lt/js/sDmgyoxPUVduX4dmhQ9NVWhPbQWa8eipQq247JGfdB4daPhSjnQEo51HOqUd3HXAW/mailer.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <h1 style="text-align: center; color: #333">Contact us</h1>
+      <label for="fname">Username</label>
+      <input type="text" id="username" name="username" placeholder="Your username...">
+      <label for="type">Report type</label>
+      <select value="Bug" name="type" id="type">
+        <option value="bug">Bug</option>
+        <option value="feedback">Feedback</option>
+        <option value="other">Other</option>
+      </select>
+      <label for="email">Email</label>
+      <input type="text" id="email" name="email" placeholder="Your email...">
+      <label for="subject">Subject</label>
+      <textarea id="subject" name="subject" placeholder="What are you having a problem with?" style="height: 150px"></textarea>
+      <button id="submit" onclick="sendEmail()">Submit</button>
+    </div>
+    <div style="position: absolute; top: 20px; right: 20px; width: 50%; text-align: center">
+      <h2 style="text-align: center; color: #333">Other ways to contact us</h2>
+      <br>
+      <span>&bullet; Using email: <a href="mailto:parkingmaster@email.com">parkingmaster@email.com</a></span>
+      <br>
+      <br>
+      <span>&bullet; Using GitHub Issues: <a href="https://github.com/Parking-Master/Parking-Master-3.0/issues/new">Issues/Report</a></span>
+      <hr style="width: 60%; margin-top: 50px">
+      <br style="margin-top: 50px">
+      <img src="images/banner.png" style="width: 50%">
+      <br>
+      <br>
+      <br>
+      <button onclick="location.assign('support.html')">Support page</button>
+    </div>
+    <script>
+      function sendEmail() {
+        let _username = document.querySelector("#username").value;
+        let _type = document.querySelector("#type").value;
+        let _email = document.querySelector("#email").value;
+        let _subject = document.querySelector("#subject").value;
+        if (!_username || !_type || !_email || !_subject) return swal("Please fill in all of the above.");
+        let message = `
+        Parking-Master-3.0 report from [user/${_username}]:
+        <hr>
+        <br>
+        <b>From</b>: ${_email}
+        <br>
+        <b>Type</b>: "${_type}"
+        <br>
+        <b>Subject</b>: ${_subject}
+        <br>
+        <b>Message</b>:
+        <br>
+        <br>
+        ${_subject}
+        `;
+        email("parkingmaster@email.com", "Parking Master 3.0 [user report]", _subject, message);
+        swal("Sent!");
+      }
+    </script>
+  </body>
+</html>
