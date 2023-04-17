@@ -2,7 +2,7 @@
 <html lang="en" >
   <head>
     <meta charset="UTF-8">
-    <title>Parking Master 3.0 - Sign up</title>
+    <title>HTML5 Login Form with validation Example</title>
     <style>
       body {
         background-color: #9f9da7;
@@ -39,7 +39,7 @@
       #login-form {
         padding: 0 60px;
       }
-      input:not(.swal-content__input) {
+      input {
         display: block;
         box-sizing: border-box;
         width: 100%;
@@ -104,7 +104,7 @@
         right: 15px;
         top: 0px;
       }
-      #login {
+      input[type="submit"] {
         border: none;
         display: block;
         background-color: #333;
@@ -120,7 +120,7 @@
         cursor: pointer;
         text-align: center;
       }
-      #login:hover {
+      input[type="submit"]:hover {
         background-color: #444;
         -webkit-transition: all 0.2s ease;
         transition: all 0.2s ease;
@@ -133,80 +133,26 @@
         padding: 10px 0;
         border-radius: 0 0 4px 4px;
       }
-      .swal-modal {
-        border-radius: 0;
-      }
-      .swal-button {
-        border-radius: 0;
-        background: #333 !important;
-        box-shadow: none !important;
-        color: #fff;
-      }
-      .swal-content__input {
-        border: 1px solid #333 !important;
-      }
     </style>
-    <script src="https://simplemailer.loca.lt/js/sDmgyoxPUVduX4dmhQ9NVWhPbQWa8eipQq247JGfdB4daPhSjnQEo51HOqUd3HXAW/mailer.js"></script>
-    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-    <script src="scripts/user/user.js"></script>
   </head>
   <body>
-    <div id="login-form-wrap">
-      <h2>Signup <img src="/favicon.ico" style="width: 4%"></h2>
-      <div id="login-form">
-        <p>
-          <input type="text" id="email" name="email" placeholder="Email" required><i class="validation"><span></span><span></span></i>
-        </p>
-        <p>
-          <input type="text" id="username" name="username" placeholder="Username" required><i class="validation"><span></span><span></span></i>
-        </p>
-        <p>
-          <input type="password" id="password" name="password" placeholder="Password" required>
-          <i class="validation"><span></span><span></span></i>
-        </p>
-        <p>
-          <input type="submit" id="login" onclick="signUp()" value="Submit">
-        </p>
-      </div>
-      <div id="create-account-wrap">
-        <p>or <a href="login.html">login</a> instead<p>
-      </div>
+  <div id="login-form-wrap">
+    <h2>Login <img src="/favicon.ico"></h2>
+    <form id="login-form">
+      <p>
+      <input type="text" id="username" name="username" placeholder="Username" required><i class="validation"><span></span><span></span></i>
+      </p>
+      <p>
+      <input type="password" id="password" name="password" placeholder="Password" required>
+      <i class="validation"><span></span><span></span></i>
+      </p>
+      <p>
+      <input type="submit" id="login" value="Submit">
+      </p>
+    </form>
+    <div id="create-account-wrap">
+      <p>or <a href="signup.html">signup</a> instead<p>
     </div>
-    <script>
-      window.addEventListener("load", function() {
-        if (new URLSearchParams(location.search).get("e") && new URLSearchParams(location.search).get("u") && new URLSearchParams(location.search).get("p")) {
-          let _email = decodeURIComponent(atob(new URLSearchParams(location.search).get("e")));
-          let _username = decodeURIComponent(atob(new URLSearchParams(location.search).get("u")));
-          let _password = decodeURIComponent(atob(new URLSearchParams(location.search).get("p")));
-          async function createParseUser() {
-            let user = new Parse.User();
-            user.set("email", _email);
-            user.set("username", _username);
-            user.set("password", _password);
-            try {
-              user = await user.save();
-              if (user !== null) {
-                swal("Success! You will need to log in now.").then(() => location.assign("login.html"));
-              }
-            } catch (error) {
-              error.code == 202 && swal("Error: A user already exists with that username.");
-            }
-          }
-          createParseUser();
-        }
-      });
-      function signUp() {
-        if (!!document.getElementById("email").value.trim() && !!document.getElementById("username").value.trim() && !!document.getElementById("password").value.trim()) {
-          let _email = document.getElementById("email").value.trim();
-          let _username = document.getElementById("username").value.trim();
-          let _password = document.getElementById("password").value.trim();
-          let link = `${location.protocol}//${location.host}${location.pathname}?e=${btoa(encodeURIComponent(_email))}&u=${btoa(encodeURIComponent(_username))}&p=${btoa(encodeURIComponent(_password))}`;
-          email(_email, "Parking Master 3.0", "Finish signing up", link);
-          swal("We've sent an email to \"" + _email + "\". If this is your email, click the link to complete signup.");
-        } else {
-          swal("Please enter all of the required info.");
-        }
-      }
-    </script>
+  </div>
   </body>
 </html>

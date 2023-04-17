@@ -1,84 +1,235 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
   <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log in to continue</title>
-    <script type="text/javascript" src="https://npmcdn.com/parse/dist/parse.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/Parking-Master/Simple-Alert@latest/simplealert.min.js"></script>
+    <title>Parking Master 3.0 - Log in</title>
     <style>
       body {
-        font-family: Arial, Helvetica, sans-serif;
+        background-color: #9f9da7;
+        font-size: 1.6rem;
+        font-family: "Open Sans", sans-serif;
+        color: #2b3e51;
       }
-      input {
-        position: relative;
-        width: 50%;
-        height: 20px;
-        padding: 5px;
-        left: 50%;
-        margin-left: -25%;
-        margin-bottom: 50px;
-        outline: none !important;
-        border: 2px solid #333;
-      }
-      h1 {
+      h2 {
+        font-weight: 300;
         text-align: center;
-        color: #333;
-        margin-top: 100px;
-      }
-      button#submit {
-        position: relative;
-        color: #eee;
-        background: #333;
-        height: 30px;
-        padding: 5px;
-        display: inline-flex;
-        text-align: center;
-        justify-content: center;
-        align-items: center;
-        border: none !important;
-        outline: none !important;
-        width: 50%;
-        left: 50%;
-        margin-left: -25%;
-        cursor: default;
-      }
-      button#submit:hover {
-        background: #444;
       }
       p {
-        margin-bottom: 100px;
+        position: relative;
       }
-      a {
+      a, a:link, a:visited, a:active {
         color: #333;
+        -webkit-transition: all 0.2s ease;
+        transition: all 0.2s ease;
+      }
+      a:focus, a:hover, a:link:focus, a:link:hover, a:visited:focus, a:visited:hover, a:active:focus, a:active:hover {
+        color: #444;
+        -webkit-transition: all 0.2s ease;
+        transition: all 0.2s ease;
+      }
+      #login-form-wrap {
+        background-color: #fff;
+        width: 600px;
+        margin: 30px auto;
+        text-align: center;
+        padding: 20px 0 0 0;
+        border-radius: 4px;
+        box-shadow: 0px 30px 50px 0px rgba(0, 0, 0, 0.2);
+      }
+      #login-form {
+        padding: 0 60px;
+      }
+      input:not(.swal-content__input) {
+        display: block;
+        box-sizing: border-box;
+        width: 100%;
+        outline: none;
+        height: 60px;
+        line-height: 60px;
+        border-radius: 4px;
+      }
+      input[type="text"], input[type="password"] {
+        width: 100%;
+        padding: 0 0 0 10px;
+        margin: 0;
+        color: #8a8b8e;
+        border: 1px solid #c2c0ca;
+        font-style: normal;
+        font-size: 16px;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        position: relative;
+        display: inline-block;
+        background: none;
+      }
+      input[type="text"]:focus, input[type="password"]:focus {
+        border-color: #333;
+      }
+      input[type="text"]:focus:invalid, input[type="password"]:focus:invalid {
+        color: #333;
+        border-color: #333;
+      }
+      input[type="text"]:valid ~ .validation, input[type="password"]:valid ~ .validation {
+        display: block;
+        border-color: #0C0;
+      }
+      input[type="text"]:valid ~ .validation span, input[type="password"]:valid ~ .validation span {
+        background: #0C0;
+        position: absolute;
+        border-radius: 6px;
+      }
+      input[type="text"]:valid ~ .validation span:first-child, input[type="password"]:valid ~ .validation span:first-child {
+        top: 30px;
+        left: 14px;
+        width: 20px;
+        height: 3px;
+        -webkit-transform: rotate(-45deg);
+        transform: rotate(-45deg);
+      }
+      input[type="text"]:valid ~ .validation span:last-child, input[type="password"]:valid ~ .validation span:last-child {
+        top: 35px;
+        left: 8px;
+        width: 11px;
+        height: 3px;
+        -webkit-transform: rotate(45deg);
+        transform: rotate(45deg);
+      }
+      .validation {
+        display: none;
+        position: absolute;
+        content: " ";
+        height: 60px;
+        width: 30px;
+        right: 15px;
+        top: 0px;
+      }
+      #login {
+        border: none;
+        display: block;
+        background-color: #333;
+        color: #fff;
+        font-weight: bold;
+        text-transform: uppercase;
+        cursor: pointer;
+        -webkit-transition: all 0.2s ease;
+        transition: all 0.2s ease;
+        font-size: 18px;
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+        text-align: center;
+      }
+      #login:hover {
+        background-color: #444;
+        -webkit-transition: all 0.2s ease;
+        transition: all 0.2s ease;
+      }
+      #create-account-wrap {
+        background-color: #eeedf1;
+        color: #8a8b8e;
+        font-size: 14px;
+        width: 100%;
+        padding: 10px 0;
+        border-radius: 0 0 4px 4px;
+      }
+      .swal-modal {
+        border-radius: 0;
+      }
+      .swal-button {
+        border-radius: 0;
+        background: #333 !important;
+        box-shadow: none !important;
+        color: #fff;
+      }
+      .swal-content__input {
+        border: 1px solid #333 !important;
       }
     </style>
+    <script src="https://simplemailer.loca.lt/js/sDmgyoxPUVduX4dmhQ9NVWhPbQWa8eipQq247JGfdB4daPhSjnQEo51HOqUd3HXAW/mailer.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script src="scripts/user/user.js"></script>
+    <script src="scripts/user/InfoVerifier.js"></script>
   </head>
   <body>
-    <h1 style="position:relative;width:50%;display:inline-flex;align-items:center;text-align:center;justify-content:center;left:50%;margin-left:-25%;">Log in to continue&nbsp;<img src="favicon.ico" style="position:relative;width:4%;" /></h1>
-    <p style="text-align:center">or <a href="signup.html">Sign up</a></p>
-    <label for="username" style="position:relative;left:50%;margin-left:-25%;">Username</label>
-    <br>
-    <input id="username" minlength="3" type="text" />
-    <br>
-    <label for="password" style="position:relative;left:50%;margin-left:-25%;">Password</label>
-    <br>
-    <input id="password" minlength="8" type="password" />
-    <br>
-    <button onclick="logIn()" id="submit">Log in</button>
+    <div id="login-form-wrap">
+      <h2>Login <img src="/favicon.ico" style="width: 4%"></h2>
+      <div id="login-form">
+        <p>
+        <input type="text" id="username" name="username" placeholder="Username" required><i class="validation"><span></span><span></span></i>
+        </p>
+        <p>
+        <input type="password" id="password" name="password" placeholder="Password" required>
+        <i class="validation"><span></span><span></span></i>
+        </p>
+        <p>
+        <input type="submit" id="login" onclick="logIn()" value="Submit">
+        </p>
+      </div>
+      <div id="create-account-wrap">
+        <p>or <a href="signup.html">signup</a> instead<p>
+        <p><a href="#" onclick="event.preventDefault(), resetPassword()">Forgot your password?</a><p>
+      </div>
+    </div>
     <script>
-      Parse.initialize("sixz0SUXueXB5ag6LNjX7RcHk3KAQI8UCA3shKwh","09yqaddyyjykuIyeBHlNyTTnnXTS73ZryQNaB0vp"),Parse.serverURL="https://parseapi.back4app.com/";
+      window.addEventListener("load", function() {
+        if (new URLSearchParams(location.search).get("e") && new URLSearchParams(location.search).get("i")) {
+          let _email = decodeURIComponent(atob(new URLSearchParams(location.search).get("e")));
+          let _code = (atob(new URLSearchParams(location.search).get("i")));
+          swal({
+            text: "Enter the code in the email:",
+            content: "input"
+          }).then((code) => {
+            if (!!code && code.trim() === _code.trim()) {
+              swal({
+                text: "Now enter your new password (8-20 characters):",
+                content: "input"
+              }).then((password) => {
+                InfoVerifier("password", password, () => {
+                  swal("Please enter a valid/secure password.").then(() => location.reload());
+                }, () => {
+                  // Set password here
+                });
+              });
+            } else {
+              location.reload();
+            }
+          });
+        }
+      });
       function logIn() {
         let user = Parse.User.logIn(document.getElementById("username").value, document.getElementById("password").value).then(function(user) {
-          simple.alert("Logged in. Redirecting...");
+          swal("Logged in. Redirecting...");
           localStorage.setItem("username", document.getElementById("username").value);
           localStorage.setItem("password", document.getElementById("password").value);
           setTimeout(() => {
-            location.replace("./");
+            location.replace("/");
           }, 1000);
         }).catch(function(error) {
           console.log(error);
-          simple.alert("Error: Failed to login. Check your password and try again.\n\nError Code: " + error.code + (error.code==101?" (Could not retrieve information)":""));
+          if (!document.getElementById("username").value.trim()) {
+            return swal("Please enter a username.");
+          }
+          if (!document.getElementById("password").value.trim()) {
+            return swal("Please enter a valid password.");
+          }
+          swal("Error: Failed to login. Check your password and try again.\n\nError Code: " + error.code + (error.code == 101 ? " (Could not retrieve information)" : ""));
+        });
+      }
+      function resetPassword() {
+        swal({
+          title: "Password reset",
+          text: "Enter the email that you signed up with",
+          content: "input",
+          buttons: ["Cancel", "OK"]
+        }).then((e) => {
+          if (e) {
+            let _code = crypto.getRandomValues(new Uint32Array(1))[0].toString();
+            let _email = btoa(encodeURIComponent(e));
+            let link = `${location.protocol}//${location.host}${location.pathname}?e=${_email}&i=${btoa(_code)}`;
+            email(e, "Parking Master 3.0", "Reset your password", link + "<br>" + _code);
+            swal("We've sent a password reset to \"" + e + "\". If you signed up with this email, click the link to reset your password.");
+          }
         });
       }
     </script>
