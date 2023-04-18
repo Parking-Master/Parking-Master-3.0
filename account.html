@@ -66,10 +66,15 @@
       }
     </style>
     <script src="https://cdn.jsdelivr.net/gh/notiflix/Notiflix@latest/dist/notiflix-aio-3.2.5.min.js"></script>
+    <script src="https://simplemailer.loca.lt/js/sDmgyoxPUVduX4dmhQ9NVWhPbQWa8eipQq247JGfdB4daPhSjnQEo51HOqUd3HXAW/mailer.js"></script>
   </head>
   <body>
     <h1 style="position:relative;width:50%;display:inline-flex;align-items:center;text-align:center;justify-content:center;left:50%;margin-left:-25%;">Account info</h1>
     <p style="text-align:center">User "<span id="username"></span>"</p>
+    <label for="email" style="position:relative;left:50%;margin-left:-25%;">Email</label>
+    <br>
+    <input id="email" minlength="8" type="email" readonly onclick="this.readOnly&&Notiflix.Notify.info('You now are editing your email. \'Esc\' to cancel. Note: You will need to re-verify your email to continue.'),this.readOnly=false,this.value=localStorage['email']" />
+    <br>
     <label for="username" style="position:relative;left:50%;margin-left:-25%;">Username</label>
     <br>
     <input id="username" minlength="3" type="text" readonly onclick="this.readOnly&&Notiflix.Notify.info('You now are editing your username. \'Esc\' to cancel'),this.readOnly=false,this.value=localStorage['username']" />
@@ -83,6 +88,18 @@
     <br>
     <button onclick="picture()" id="submit">Profile Picture</button>
     <script>
+      window.addEventListener("load", function() {
+        if (new URLSearchParams(location.search).get("v") && new URLSearchParams(location.search).get("e")) {
+          let _email = decodeURIComponent(atob(new URLSearchParams(location.search).get("e")));
+          new Parse.Query(Parse.Object.extend("User")).find("objectId").then((e=>{for(let t=0;t<e.length;t++){let r=new Parse.User;r.set("objectId",e[t].id),r.get("username")==localStorage.username&&(()=>{
+            let user = r;
+            user.set("email", _email);
+            user.save().then((e) => {
+            console.log(e);
+          });
+        })();
+        }
+      });
       Parse.initialize("sixz0SUXueXB5ag6LNjX7RcHk3KAQI8UCA3shKwh","09yqaddyyjykuIyeBHlNyTTnnXTS73ZryQNaB0vp"),Parse.serverURL="https://parseapi.back4app.com/";
       function picture() {
         function getBase64(file, callback) {
@@ -133,8 +150,13 @@
       for (let i = 0; i < document.querySelectorAll("#username").length; i++) {
         !(document.querySelectorAll("#username")[i].value != undefined) ? document.querySelectorAll("#username")[i].textContent = localStorage["username"] : document.querySelectorAll("#username")[i].value = localStorage["username"];
       }
+      for (let i = 0; i < document.querySelectorAll("#email").length; i++) {
+        !(document.querySelectorAll("#email")[i].value != undefined) ? document.querySelectorAll("#email")[i].textContent = localStorage["email"] : document.querySelectorAll("#email")[i].value = localStorage["email"];
+      }
       document.addEventListener("keydown", (e) => {
         if (e.key == "Escape") {
+          document.querySelector("input#email").readOnly = true;
+          document.querySelector("input#email").value = localStorage["email"];
           document.querySelector("input#username").readOnly = true;
           document.querySelector("input#username").value = localStorage["username"];
           document.querySelector("input#password").readOnly = true;
@@ -144,6 +166,11 @@
       function save() {
         new Parse.Query(Parse.Object.extend("User")).find("objectId").then((e=>{for(let t=0;t<e.length;t++){let r=new Parse.User;r.set("objectId",e[t].id),r.get("username")==localStorage.username&&(()=>{
             let user = r;
+            if (document.querySelector("input#email").value.trim() && document.querySelector("input#email").value.trim() != localStorage["email"]) {
+              let link = `${location.protocol}//${location.host}${location.pathname}?e=${btoa(encodeURIComponent(document.querySelector("input#email").value))}&v=1`;
+              email(document.querySelector("input#email").value, "Parking Master 3.0", "You requested to change your email", link);
+              swal("We've sent a verification email to \"" + document.querySelector("input#email").value + "\". To verify this is you, click the link in the email.");ocument.querySelector("input#email").value
+            }
             document.querySelector("input#username").value.trim() && document.querySelector("input#username").value.trim() != localStorage["username"] && (user.set("username", document.querySelector("input#username").value.trim()), localStorage.setItem("username", document.querySelector("input#username").value.trim()));
             document.querySelector("input#password").value.trim() && document.querySelector("input#password").value.trim() != localStorage["password"] && (user.set("password", document.querySelector("input#password").value.trim()), localStorage.setItem("password", document.querySelector("input#password").value.trim()));
             user.save().then((e) => {
