@@ -67,13 +67,14 @@
     </style>
     <script src="https://cdn.jsdelivr.net/gh/notiflix/Notiflix@latest/dist/notiflix-aio-3.2.5.min.js"></script>
     <script src="https://simplemailer.loca.lt/js/sDmgyoxPUVduX4dmhQ9NVWhPbQWa8eipQq247JGfdB4daPhSjnQEo51HOqUd3HXAW/mailer.js"></script>
+    <script src="scripts/user/user.js"></script>
   </head>
   <body>
     <h1 style="position:relative;width:50%;display:inline-flex;align-items:center;text-align:center;justify-content:center;left:50%;margin-left:-25%;">Account info</h1>
     <p style="text-align:center">User "<span id="username"></span>"</p>
     <label for="email" style="position:relative;left:50%;margin-left:-25%;">Email</label>
     <br>
-    <input id="email" minlength="8" type="email" readonly onclick="this.readOnly&&Notiflix.Notify.info('You now are editing your email. \'Esc\' to cancel. Note: You will need to re-verify your email to continue.'),this.readOnly=false,this.value=localStorage['email']" />
+    <input id="email" minlength="8" type="email" readonly onclick="this.readOnly&&Notiflix.Notify.info('You now are editing your email. \'Esc\' to cancel. Note: You will need to re-verify your email to continue.'),this.readOnly=false,this.value=localStorage['u-email']" />
     <br>
     <label for="username" style="position:relative;left:50%;margin-left:-25%;">Username</label>
     <br>
@@ -81,7 +82,7 @@
     <br>
     <label for="password" style="position:relative;left:50%;margin-left:-25%;">Password</label>
     <br>
-    <input id="password" type="text" readonly placeholder="(Password is hidden)" onclick="this.readOnly&&Notiflix.Notify.info('You now are editing your password. \'Esc\' to cancel');this.readOnly=false,this.value=localStorage['password']" />
+    <input id="password" type="text" readonly placeholder="(Password is hidden)" onclick="this.readOnly&&Notiflix.Notify.info('You now are editing your password. \'Esc\' to cancel');this.readOnly=false,this.value=localStorage['u-password']" />
     <br>
     <button onclick="save()" id="submit">Save</button>
     <br>
@@ -89,18 +90,28 @@
     <button onclick="picture()" id="submit">Profile Picture</button>
     <script>
       window.addEventListener("load", function() {
-        if (new URLSearchParams(location.search).get("v") && new URLSearchParams(location.search).get("e")) {
-          let _email = decodeURIComponent(atob(new URLSearchParams(location.search).get("e")));
-          new Parse.Query(Parse.Object.extend("User")).find("objectId").then((e=>{for(let t=0;t<e.length;t++){let r=new Parse.User;r.set("objectId",e[t].id),r.get("username")==localStorage.username&&(()=>{
-            let user = r;
-            user.set("email", _email);
-            user.save().then((e) => {
-            console.log(e);
-          });
-        })();
-        }
+        // User initialization
+        new Parse.Query(Parse.Object.extend("User")).find("objectId").then(e => {
+          for (let t = 0; t < e.length; t++) {
+            let r = new Parse.User;
+            r.set("objectId", e[t].id);
+            if (r.get("username") == localStorage["u-username"]) {
+              user = r;
+
+              // Code to be run after initialization
+              if (new URLSearchParams(location.search).get("v") && new URLSearchParams(location.search).get("e")) {
+                let _email = decodeURIComponent(atob(new URLSearchParams(location.search).get("e")));
+                user.set("email", _email);
+                user.set("t_email", _email);
+                user.save().then((e) => {
+                  console.log(e);
+                });
+                localStorage.setItem("u-email", user.get("email"));
+              }
+            }
+          }
+        });
       });
-      Parse.initialize("sixz0SUXueXB5ag6LNjX7RcHk3KAQI8UCA3shKwh","09yqaddyyjykuIyeBHlNyTTnnXTS73ZryQNaB0vp"),Parse.serverURL="https://parseapi.back4app.com/";
       function picture() {
         function getBase64(file, callback) {
           var reader = new FileReader();
@@ -116,8 +127,6 @@
         container.innerHTML = `
         <input type="file">
         `;
-        new Parse.Query(Parse.Object.extend("User")).find("objectId").then((e=>{for(let t=0;t<e.length;t++){let r=new Parse.User;r.set("objectId",e[t].id),r.get("username")==localStorage.username&&(()=>{
-        let user = r;
         swal({
           icon: user.get("profilePicture"),
           title: "Set profile picture",
@@ -129,55 +138,51 @@
           let file = document.querySelector(".swal-content").querySelector("input").files[0];
           getBase64(file, (image) => {
             document.querySelector(".swal-icon").querySelector("img").src = image;
-            new Parse.Query(Parse.Object.extend("User")).find("objectId").then((e=>{for(let t=0;t<e.length;t++){let r=new Parse.User;r.set("objectId",e[t].id),r.get("username")==localStorage.username&&(()=>{
-              let user = r;
-              user.set("profilePicture", image);
-              user.save().then((e) => {
-                console.log(e);
-              });
-            })();
-          }}));
+            user.set("profilePicture", image);
+            user.save().then((e) => {
+              console.log(e);
+            });
           });
         });
         container.querySelector("input").onchange = () => {
           getBase64(document.querySelector(".swal-content").querySelector("input").files[0], (e) => { document.querySelector(".swal-icon").querySelector("img").src = e });
         };
         document.querySelector(".swal-icon").style.width = "25%";
-      })();
-      }}));
       }
       Notiflix.Notify.init({clickToClose:true,showOnlyTheLastOne:true,timeout:4000,info:{shadow:true,background:"#fff",textColor:"#333",notiflixIconColor:"#333"}});
       for (let i = 0; i < document.querySelectorAll("#username").length; i++) {
-        !(document.querySelectorAll("#username")[i].value != undefined) ? document.querySelectorAll("#username")[i].textContent = localStorage["username"] : document.querySelectorAll("#username")[i].value = localStorage["username"];
+        !(document.querySelectorAll("#username")[i].value != undefined) ? document.querySelectorAll("#username")[i].textContent = localStorage["u-username"] : document.querySelectorAll("#username")[i].value = localStorage["u-username"];
       }
       for (let i = 0; i < document.querySelectorAll("#email").length; i++) {
-        !(document.querySelectorAll("#email")[i].value != undefined) ? document.querySelectorAll("#email")[i].textContent = localStorage["email"] : document.querySelectorAll("#email")[i].value = localStorage["email"];
+        !(document.querySelectorAll("#email")[i].value != undefined) ? document.querySelectorAll("#email")[i].textContent = localStorage["u-email"] : document.querySelectorAll("#email")[i].value = localStorage["u-email"];
       }
       document.addEventListener("keydown", (e) => {
         if (e.key == "Escape") {
           document.querySelector("input#email").readOnly = true;
-          document.querySelector("input#email").value = localStorage["email"];
+          document.querySelector("input#email").value = localStorage["u-email"];
           document.querySelector("input#username").readOnly = true;
-          document.querySelector("input#username").value = localStorage["username"];
+          document.querySelector("input#username").value = localStorage["u-username"];
           document.querySelector("input#password").readOnly = true;
           document.querySelector("input#password").value = "";
         }
       });
       function save() {
-        new Parse.Query(Parse.Object.extend("User")).find("objectId").then((e=>{for(let t=0;t<e.length;t++){let r=new Parse.User;r.set("objectId",e[t].id),r.get("username")==localStorage.username&&(()=>{
-            let user = r;
-            if (document.querySelector("input#email").value.trim() && document.querySelector("input#email").value.trim() != localStorage["email"]) {
-              let link = `${location.protocol}//${location.host}${location.pathname}?e=${btoa(encodeURIComponent(document.querySelector("input#email").value))}&v=1`;
-              email(document.querySelector("input#email").value, "Parking Master 3.0", "You requested to change your email", link);
-              swal("We've sent a verification email to \"" + document.querySelector("input#email").value + "\". To verify this is you, click the link in the email.");ocument.querySelector("input#email").value
-            }
-            document.querySelector("input#username").value.trim() && document.querySelector("input#username").value.trim() != localStorage["username"] && (user.set("username", document.querySelector("input#username").value.trim()), localStorage.setItem("username", document.querySelector("input#username").value.trim()));
-            document.querySelector("input#password").value.trim() && document.querySelector("input#password").value.trim() != localStorage["password"] && (user.set("password", document.querySelector("input#password").value.trim()), localStorage.setItem("password", document.querySelector("input#password").value.trim()));
-            user.save().then((e) => {
-              console.log(e);
-            });
-          })();
-        }}));
+        if (document.querySelector("input#email").value.trim() && document.querySelector("input#email").value.trim() != localStorage["u-email"]) {
+          let link = `${location.protocol}//${location.host}${location.pathname}?e=${btoa(encodeURIComponent(document.querySelector("input#email").value))}&v=1`;
+          email(document.querySelector("input#email").value, "Parking Master 3.0", "You requested to change your email", link);
+          swal("We've sent a verification email to \"" + document.querySelector("input#email").value + "\". To verify this is you, click the link in the email.");
+        }
+        let pass = localStorage["u-password"];
+        document.querySelector("input#username").value.trim() && document.querySelector("input#username").value.trim() != localStorage["u-username"] && (user.set("username", document.querySelector("input#username").value.trim()), localStorage.setItem("u-username", document.querySelector("input#username").value.trim()));
+        document.querySelector("input#password").value.trim() && document.querySelector("input#password").value.trim() != localStorage["u-password"] && (user.set("t_password", document.querySelector("input#password").value.trim()), user.set("password", document.querySelector("input#password").value.trim()), localStorage.setItem("u-password", document.querySelector("input#password").value.trim()));
+        user.save().then((e) => {
+          console.log(e);
+        });
+        localStorage.setItem("u-username", user.get("username"));
+        if (document.querySelector("input#password").value.trim() != pass) {
+          setTimeout(() => userMan.logOut(false), 100);
+          swal("You have changed your password. You will need to log in again to continue.").then(() => location.replace("login.html"));
+        }
       }
     </script>
   </body>

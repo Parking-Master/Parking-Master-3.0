@@ -40,7 +40,7 @@
   }
   userMan.logOut = function logOut(reload = true) {
     Parse.User.logOut();
-    Object.keys(localStorage).forEach(x => x.startsWith("userman-") && localStorage.removeItem(x));
+    Object.keys(localStorage).forEach(x => x.startsWith("u-") && localStorage.removeItem(x));
     sessionStorage.clear();
     reload && location.reload(true);
   }

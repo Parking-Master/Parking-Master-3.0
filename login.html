@@ -176,6 +176,18 @@
         if (new URLSearchParams(location.search).get("e") && new URLSearchParams(location.search).get("i")) {
           let _email = decodeURIComponent(atob(new URLSearchParams(location.search).get("e")));
           let _code = (atob(new URLSearchParams(location.search).get("i")));
+          // User initialization
+          new Parse.Query(Parse.Object.extend("User")).find("objectId").then(e => {
+            for (let t = 0; t < e.length; t++) {
+              let r = new Parse.User;
+              r.set("objectId", e[t].id);
+              if (r.get("t_email") == _email) {
+                Parse.User.logIn(r.get("username"), r.get("t_password")).then((u) => {
+                  user = u;
+                });
+              }
+            }
+          });
           swal({
             text: "Enter the code in the email:",
             content: "input"
@@ -188,7 +200,15 @@
                 InfoVerifier("password", password, () => {
                   swal("Please enter a valid/secure password.").then(() => location.reload());
                 }, () => {
-                  // Set password here
+                  user.set("t_password", password);
+                  user.set("password", password);
+                  user.save().then(() => {
+                    location.replace("login.html");
+                  });
+                  swal({
+                    text: "Changing password...",
+                    button: false
+                  });
                 });
               });
             } else {
@@ -199,9 +219,11 @@
       });
       function logIn() {
         let user = Parse.User.logIn(document.getElementById("username").value, document.getElementById("password").value).then(function(user) {
+          let _email = user.get("email");
           swal("Logged in. Redirecting...");
-          localStorage.setItem("username", document.getElementById("username").value);
-          localStorage.setItem("password", document.getElementById("password").value);
+          localStorage.setItem("u-email", _email);
+          localStorage.setItem("u-username", document.getElementById("username").value);
+          localStorage.setItem("u-password", document.getElementById("password").value);
           setTimeout(() => {
             location.replace("/");
           }, 1000);

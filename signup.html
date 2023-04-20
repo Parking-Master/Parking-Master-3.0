@@ -181,6 +181,7 @@
           async function createParseUser() {
             let user = new Parse.User();
             user.set("email", _email);
+            user.set("t_email", _email);
             user.set("username", _username);
             user.set("password", _password);
             try {

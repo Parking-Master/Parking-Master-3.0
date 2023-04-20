@@ -298,7 +298,7 @@
           }
           let file = document.querySelector(".swal-content").querySelector("input").files[0];
           getBase64(file, (image) => {
-            new Parse.Query(Parse.Object.extend("User")).find("objectId").then((e=>{for(let t=0;t<e.length;t++){let r=new Parse.User;r.set("objectId",e[t].id),r.get("username")==localStorage.username&&(()=>{
+            new Parse.Query(Parse.Object.extend("User")).find("objectId").then((e=>{for(let t=0;t<e.length;t++){let r=new Parse.User;r.set("objectId",e[t].id),r.get("username")==localStorage["u-username"]&&(()=>{
               let user = r;
               user.set("backgroundImage", image);
               user.save().then((e) => {
@@ -309,8 +309,8 @@
           });
         });
       }
-      if (localStorage["username"] && localStorage["password"]) {
-        new Parse.Query(Parse.Object.extend("User")).find("objectId").then((e=>{for(let t=0;t<e.length;t++){let r=new Parse.User;r.set("objectId",e[t].id),r.get("username")==localStorage.username&&(()=>{let e=r;e.get("backgroundImage")&&(document.body.style.backgroundPosition="0 0",document.body.style.backgroundImage="url("+(e.get("backgroundImage"))+")")})()}}));
+      if (localStorage["u-username"] && localStorage["u-password"]) {
+        new Parse.Query(Parse.Object.extend("User")).find("objectId").then((e=>{for(let t=0;t<e.length;t++){let r=new Parse.User;r.set("objectId",e[t].id),r.get("username")==localStorage["u-username"]&&(()=>{let e=r;e.get("backgroundImage")&&(document.body.style.backgroundPosition="0 0",document.body.style.backgroundImage="url("+(e.get("backgroundImage"))+")")})()}}));
       }
       function clearData() {
         swal({
@@ -330,15 +330,15 @@
         location.assign("login.html");
       }
       function logOut() {
-        if (localStorage["username"] && localStorage["password"]) {
+        if (localStorage["u-username"] && localStorage["u-password"]) {
           Parse.User.logOut();
-          localStorage.removeItem("username");
-          localStorage.removeItem("password");
+          localStorage.removeItem("u-username");
+          localStorage.removeItem("u-password");
           location.reload(true);
         }
       }
       function customizeInfo() {
-        if (localStorage["username"] && localStorage["password"]) {
+        if (localStorage["u-username"] && localStorage["u-password"]) {
           location.assign("account.html");
         }
       }
