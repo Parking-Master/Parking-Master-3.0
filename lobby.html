@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiplayer - Parking Master 3.0</title>
+    <style>
+      .screen[data-player="1"] {
+        left: 0;
+        top: 0;
+        bottom: 0;
+        position: absolute;
+        height: 100%;
+        width: 50%;
+        margin: 0;
+        border: none;
+        border-right: 2px solid #333;
+      }
+      .screen[data-player="2"] {
+        right: 0;
+        top: 0;
+        bottom: 0;
+        position: absolute;
+        height: 100%;
+        width: 50%;
+        margin: 0;
+        border: none;
+        border-left: 2px solid #333;
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/gh/Parking-Master/Gametime.js-2.0@latest/gametime.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  </head>
+  <body>
+    <div class="screen-wrapper">
+      <iframe data-player="1" class="screen" src="levels/level0.html"></iframe>
+      <iframe data-player="2" class="screen" src="levels/level0.html"></iframe>
+    </div>
+    <script>
+      // Gametime.js setup
+      gametime.set("key", "pub-c-c1c4abde-7afc-46f5-b474-d9fc1adf7714", "sub-c-c2311a5c-624b-4b14-98bb-933cc717072f");
+      gametime.set("channel", new URLSearchParams(location.search).get("channel"));
+      
+      gametime.make("capture");
+      gametime.on("capture", (data) => {
+        let user = data.split(",")[0];
+        let capture = data.split(",")[1];
+        if (user != gametime.user.position) return;
+        if (gametime.user.position == 1) {
+          player2Screen.srcdoc = "<img src=\"" + capture + "\" style=\"position: absolute; left: 0; top: 0; right: 0; bottom: 0; border: none; width: 100%; height: 100%; margin: 0 !important\">";
+        } else {
+          player1Screen.srcdoc = "<img src=\"" + capture + "\" style=\"position: absolute; left: 0; top: 0; right: 0; bottom: 0; border: none; width: 100%; height: 100%; margin: 0 !important\">";
+        }
+      });
+
+      let player1Screen = document.querySelector(".screen[data-player='1']");
+      let player2Screen = document.querySelector(".screen[data-player='2']");
+
+      let ready1 = false;
+      let ready2 = false;
+      let reposition = false;
+
+      player1Screen.addEventListener("load", () => ready1 = true);
+      player2Screen.addEventListener("load", () => ready2 = true);
+
+      let run = setInterval(() => {
+        if (ready1 && ready2) {
+          player2Screen.contentWindow.postMessage("mp_position", "*");
+          if (reposition) clearInterval(run);
+        }
+      });
+
+      window.addEventListener("message", (e) => {
+        let message = e.data;
+        if (message == "mp_position_check") {
+          reposition = true;
+        }
+        if (message.startsWith("mp_savestate_check")) {
+          let capture = message.split("-")[1];
+          gametime.run("capture", [gametime.user.position + "," + capture]);
+        }
+      });
+
+      window.addEventListener("load", function() {
+        setTimeout(() => {
+          if (gametime.user.position == 1) {
+            player2Screen.src = "";
+          } else {
+            player1Screen.src = "";
+          }
+          setInterval(() => {
+            if (gametime.user.position == 1) {
+              player1Screen.contentWindow.postMessage("mp_savestate", "*");
+            } else {
+              player2Screen.contentWindow.postMessage("mp_savestate", "*");
+            }
+          }, 1000);
+        }, 10000);
+      });
+    </script>
+  </body>
+</html>

@@ -866,6 +866,17 @@
         }
         animate();
       })();
+
+      window.addEventListener("message", (e) => {
+        let message = e.data;
+        if (message == "mp_position") {
+          car.translateX(10);
+          setTimeout(() => parent.postMessage("mp_position_check", "*"), 3000);
+        }
+        if (message == "mp_savestate") {
+          parent.postMessage("mp_savestate_check-" + renderer.domElement.toDataURL(), "*");
+        }
+      });
     </script>
   </body>
 </html>

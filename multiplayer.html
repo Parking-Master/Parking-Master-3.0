@@ -251,7 +251,7 @@
         
               }
               content.innerHTML += `
-                <a class="lobby" href="lobby.html?channel=${lobby.name}">&gt; ${lobby.name}&nbsp;&nbsp;<small>Created ${daysBetween(lobby.time, new Date()) <= 0 ? "today" : daysBetween(lobby.time, new Date()) + " days ago"} at ${timeConvert(lobby.time.toLocaleString().split(" ")[1].split(":").reverse().splice(1).reverse().join(":"))}</small></a>
+                <a class="lobby" href="lobby.html?channel=${lobby.name}">&gt; ${lobby.name}&nbsp;&nbsp;<small>Created ${daysBetween(lobby.time, new Date()) <= 0 ? "today" : daysBetween(lobby.time, new Date()) <= 1 ? "yesterday" : daysBetween(lobby.time, new Date()) + " days ago"} at ${timeConvert(lobby.time.toLocaleString().split(" ")[1].split(":").reverse().splice(1).reverse().join(":"))}</small></a>
                 <br>
               `;
             }, (error) => {
