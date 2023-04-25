@@ -569,12 +569,14 @@
         if (direction == "forward") {
           carAcceleration >= maxThreshold || (carAcceleration += acc);
           car.translateX(carAcceleration);
+          parent.postMessage("drive-" + direction, "*");
           accelerateSound.play();
           decelerateSound.pause();
         }
         if (direction == "backward") {
           carAcceleration >= maxThreshold || (carAcceleration += acc);
           car.translateX(-carAcceleration);
+          parent.postMessage("drive-" + direction, "*");
           accelerateSound.play();
           decelerateSound.pause();
         }
@@ -875,6 +877,15 @@
         }
         if (message == "mp_savestate") {
           parent.postMessage("mp_savestate_check-" + renderer.domElement.toDataURL(), "*");
+        }
+        if (message.startsWith("key_event")) {
+          let type = message.split("-")[1];
+          let key = message.split("-")[2];
+          document.dispatchEvent(new KeyboardEvent(type, { key: key }));
+        }
+        if (message.startsWith("shift_event")) {
+          let type = message.split("-")[1];
+          shift(type);
         }
       });
     </script>

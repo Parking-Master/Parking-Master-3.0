@@ -41,16 +41,23 @@
       gametime.set("key", "pub-c-c1c4abde-7afc-46f5-b474-d9fc1adf7714", "sub-c-c2311a5c-624b-4b14-98bb-933cc717072f");
       gametime.set("channel", new URLSearchParams(location.search).get("channel"));
       
-      gametime.make("capture");
-      gametime.on("capture", (data) => {
+      gametime.make("drive");
+      gametime.on("drive", (data) => {
+        alert();
+        let screen;
         let user = data.split(",")[0];
-        let capture = data.split(",")[1];
+        let direction = data.split(",")[1];
         if (user != gametime.user.position) return;
         if (gametime.user.position == 1) {
-          player2Screen.srcdoc = "<img src=\"" + capture + "\" style=\"position: absolute; left: 0; top: 0; right: 0; bottom: 0; border: none; width: 100%; height: 100%; margin: 0 !important\">";
+          screen = player2Screen;
         } else {
-          player1Screen.srcdoc = "<img src=\"" + capture + "\" style=\"position: absolute; left: 0; top: 0; right: 0; bottom: 0; border: none; width: 100%; height: 100%; margin: 0 !important\">";
+          screen = player1Screen;
         }
+        if (direction == "backward") {
+          screen.contentWindow.postMessage("shift_event-reverse", "*");
+        }
+        screen.contentWindow.postMessage("key_event-keydown-ArrowUp", "*");
+        screen.contentWindow.postMessage("key_event-keyup-ArrowUp", "*");
       });
 
       let player1Screen = document.querySelector(".screen[data-player='1']");
@@ -83,18 +90,20 @@
 
       window.addEventListener("load", function() {
         setTimeout(() => {
+          let screen;
           if (gametime.user.position == 1) {
-            player2Screen.src = "";
+            screen = player1Screen;
           } else {
-            player1Screen.src = "";
+            screen = player2Screen;
           }
-          setInterval(() => {
-            if (gametime.user.position == 1) {
-              player1Screen.contentWindow.postMessage("mp_savestate", "*");
-            } else {
-              player2Screen.contentWindow.postMessage("mp_savestate", "*");
+          screen.contentWindow.addEventListener("message", (e) => {
+            alert();
+            let message = e.data;
+            if (message.startsWith("drive")) {
+              let direction = message.split("-")[1];
+              gametime.run("drive", [gametime.user.position + "," + direction]);
             }
-          }, 1000);
+          });
         }, 10000);
       });
     </script>
