@@ -41,9 +41,20 @@
       gametime.set("key", "pub-c-c1c4abde-7afc-46f5-b474-d9fc1adf7714", "sub-c-c2311a5c-624b-4b14-98bb-933cc717072f");
       gametime.set("channel", new URLSearchParams(location.search).get("channel"));
       
-      gametime.make("drive");
-      gametime.on("drive", (data) => {
-        alert();
+      gametime.make("accelerate");
+      gametime.make("decelerate");
+      gametime.on("decelerate", (data) => {
+        let screen;
+        let user = data.split(",")[0];
+        if (user != gametime.user.position) return;
+        if (gametime.user.position == 1) {
+          screen = player2Screen;
+        } else {
+          screen = player1Screen;
+        }
+        screen.contentWindow.postMessage("key_event-keyup-ArrowUp", "*");
+      });
+      gametime.on("accelerate", (data) => {
         let screen;
         let user = data.split(",")[0];
         let direction = data.split(",")[1];
@@ -57,7 +68,6 @@
           screen.contentWindow.postMessage("shift_event-reverse", "*");
         }
         screen.contentWindow.postMessage("key_event-keydown-ArrowUp", "*");
-        screen.contentWindow.postMessage("key_event-keyup-ArrowUp", "*");
       });
 
       let player1Screen = document.querySelector(".screen[data-player='1']");
@@ -73,6 +83,21 @@
       let run = setInterval(() => {
         if (ready1 && ready2) {
           player2Screen.contentWindow.postMessage("mp_position", "*");
+          if (gametime.user.position == 1) {
+            screen = player1Screen;
+          } else {
+            screen = player2Screen;
+          }
+          window.addEventListener("message", (e) => {
+            let message = e.data;
+            if (message.startsWith("accelerate")) {
+              let direction = message.split("-")[1];
+              gametime.run("accelerate", [gametime.user.position + "," + direction]);
+            }
+            if (message.startsWith("decelerate")) {
+              gametime.run("decelerate", [gametime.user.position]);
+            }
+          });
           if (reposition) clearInterval(run);
         }
       });
@@ -86,25 +111,6 @@
           let capture = message.split("-")[1];
           gametime.run("capture", [gametime.user.position + "," + capture]);
         }
-      });
-
-      window.addEventListener("load", function() {
-        setTimeout(() => {
-          let screen;
-          if (gametime.user.position == 1) {
-            screen = player1Screen;
-          } else {
-            screen = player2Screen;
-          }
-          screen.contentWindow.addEventListener("message", (e) => {
-            alert();
-            let message = e.data;
-            if (message.startsWith("drive")) {
-              let direction = message.split("-")[1];
-              gametime.run("drive", [gametime.user.position + "," + direction]);
-            }
-          });
-        }, 10000);
       });
     </script>
   </body>

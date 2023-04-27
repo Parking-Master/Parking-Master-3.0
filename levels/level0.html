@@ -569,14 +569,14 @@
         if (direction == "forward") {
           carAcceleration >= maxThreshold || (carAcceleration += acc);
           car.translateX(carAcceleration);
-          parent.postMessage("drive-" + direction, "*");
+          parent.postMessage("accelerate-" + direction, "*");
           accelerateSound.play();
           decelerateSound.pause();
         }
         if (direction == "backward") {
           carAcceleration >= maxThreshold || (carAcceleration += acc);
           car.translateX(-carAcceleration);
-          parent.postMessage("drive-" + direction, "*");
+          parent.postMessage("accelerate-" + direction, "*");
           accelerateSound.play();
           decelerateSound.pause();
         }
@@ -726,6 +726,7 @@
         carAcceleration = 0;
       }
       document.addEventListener("keyup", (e) => {
+        parent.postMessage("decelerate");
         if (e.key == "ArrowUp") {
           if (!/autopilot|neutral/gi.test(transmission)) {
             let t = .2;
