@@ -569,14 +569,12 @@
         if (direction == "forward") {
           carAcceleration >= maxThreshold || (carAcceleration += acc);
           car.translateX(carAcceleration);
-          parent.postMessage("accelerate-" + direction, "*");
           accelerateSound.play();
           decelerateSound.pause();
         }
         if (direction == "backward") {
           carAcceleration >= maxThreshold || (carAcceleration += acc);
           car.translateX(-carAcceleration);
-          parent.postMessage("accelerate-" + direction, "*");
           accelerateSound.play();
           decelerateSound.pause();
         }
@@ -726,7 +724,6 @@
         carAcceleration = 0;
       }
       document.addEventListener("keyup", (e) => {
-        parent.postMessage("decelerate");
         if (e.key == "ArrowUp") {
           if (!/autopilot|neutral/gi.test(transmission)) {
             let t = .2;
@@ -876,19 +873,38 @@
           car.translateX(10);
           setTimeout(() => parent.postMessage("mp_position_check", "*"), 3000);
         }
-        if (message == "mp_savestate") {
-          parent.postMessage("mp_savestate_check-" + renderer.domElement.toDataURL(), "*");
+        if (message == "position_getter") {
+          parent.postMessage("position_check-" + car.position.x + "," + car.position.y + "," + car.position.z, "*");
         }
-        if (message.startsWith("key_event")) {
-          let type = message.split("-")[1];
-          let key = message.split("-")[2];
-          document.dispatchEvent(new KeyboardEvent(type, { key: key }));
+        if (message.startsWith("position_setter")) {
+          let position = message.split("-")[1].split(",");
+          let x = position[0] - 0;
+          let y = position[1] - 0;
+          let z = position[2] - 0;
+          car.position.set(x, y, z);
         }
-        if (message.startsWith("shift_event")) {
-          let type = message.split("-")[1];
-          shift(type);
+        if (message.startsWith("theme_setter")) {
+          let theme = message.split("-")[1];
+          document.querySelector(".radar-globe").style.borderRightColor = theme;
+          document.querySelector(".radar-globe").style.borderLeftColor = theme;
+          document.querySelector(".backup-camera").style.borderColor = theme;
+          document.querySelectorAll("button").forEach(x => x.style.fill = theme);
+        }
+        if (message.startsWith("click_event_return")) {
+          let element = message.split("-").splice(1).join("-");
+          document.querySelector(element).click();
         }
       });
+      window.addEventListener("click", function(e) {
+        if (e.target.className) {
+          let names = [];
+          e.target.classList.forEach(x => {
+            names.push("." + x);
+          });
+          let className = names.join("");
+          parent.postMessage("click_event-" + className, "*");
+        }
+      })
     </script>
   </body>
 </html>

@@ -27,6 +27,12 @@
         border: none;
         border-left: 2px solid #333;
       }
+      .screen:disabled, .screen[data-disabled="disabled"] {
+        opacity: .7;
+        pointer-events: none !important;
+        touch-action: none !important;
+        cursor: default !important;
+      }
     </style>
     <script src="https://cdn.jsdelivr.net/gh/Parking-Master/Gametime.js-2.0@latest/gametime.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -41,33 +47,31 @@
       gametime.set("key", "pub-c-c1c4abde-7afc-46f5-b474-d9fc1adf7714", "sub-c-c2311a5c-624b-4b14-98bb-933cc717072f");
       gametime.set("channel", new URLSearchParams(location.search).get("channel"));
       
-      gametime.make("accelerate");
-      gametime.make("decelerate");
-      gametime.on("decelerate", (data) => {
+      gametime.make("click");
+      gametime.make("position");
+      gametime.on("click", (data) => {
         let screen;
         let user = data.split(",")[0];
-        if (user != gametime.user.position) return;
+        let element = data.split(",")[1];
+        if (user == gametime.user.position) return;
         if (gametime.user.position == 1) {
           screen = player2Screen;
         } else {
           screen = player1Screen;
         }
-        screen.contentWindow.postMessage("key_event-keyup-ArrowUp", "*");
+        screen.contentWindow.postMessage("click_event_return-" + element, "*");
       });
-      gametime.on("accelerate", (data) => {
+      gametime.on("position", (data) => {
         let screen;
         let user = data.split(",")[0];
-        let direction = data.split(",")[1];
-        if (user != gametime.user.position) return;
+        let position = data.split(",").splice(1).join(",");
+        if (user == gametime.user.position) return;
         if (gametime.user.position == 1) {
           screen = player2Screen;
         } else {
           screen = player1Screen;
         }
-        if (direction == "backward") {
-          screen.contentWindow.postMessage("shift_event-reverse", "*");
-        }
-        screen.contentWindow.postMessage("key_event-keydown-ArrowUp", "*");
+        screen.contentWindow.postMessage("position_setter-" + position, "*");
       });
 
       let player1Screen = document.querySelector(".screen[data-player='1']");
@@ -83,33 +87,47 @@
       let run = setInterval(() => {
         if (ready1 && ready2) {
           player2Screen.contentWindow.postMessage("mp_position", "*");
-          if (gametime.user.position == 1) {
-            screen = player1Screen;
-          } else {
-            screen = player2Screen;
-          }
-          window.addEventListener("message", (e) => {
-            let message = e.data;
-            if (message.startsWith("accelerate")) {
-              let direction = message.split("-")[1];
-              gametime.run("accelerate", [gametime.user.position + "," + direction]);
-            }
-            if (message.startsWith("decelerate")) {
-              gametime.run("decelerate", [gametime.user.position]);
-            }
-          });
           if (reposition) clearInterval(run);
         }
       });
 
+      team = "red";
+
+      setInterval(() => {
+        team = gametime.user.position == 1 ? "red" : "blue";
+        let screen;
+        if (gametime.user.position == 1) {
+          player2Screen.dataset.disabled = "disabled";
+          player1Screen.dataset.disabled = "";
+          screen = player1Screen;
+        } else {
+          player1Screen.dataset.disabled = "disabled";
+          player2Screen.dataset.disabled = "";
+          screen = player2Screen;
+        }
+        screen.contentWindow.postMessage("position_getter", "*");
+
+        screen.contentWindow.postMessage("theme_setter-" + team, "*");
+        player1Screen == screen ? player2Screen.contentWindow.postMessage("theme_setter-" + (team == "red" ? "blue" : "red"), "*") : player1Screen.contentWindow.postMessage("theme_setter-" + (team == "red" ? "blue" : "red"), "*");
+      }, 100);
       window.addEventListener("message", (e) => {
         let message = e.data;
         if (message == "mp_position_check") {
           reposition = true;
         }
-        if (message.startsWith("mp_savestate_check")) {
-          let capture = message.split("-")[1];
-          gametime.run("capture", [gametime.user.position + "," + capture]);
+        if (message.startsWith("position_check")) {
+          let car = {
+            position: {}
+          };
+          let positions = message.split("-").splice(1).join("-");
+          car.position.x = positions.split(",")[0];
+          car.position.y = positions.split(",")[1];
+          car.position.z = positions.split(",")[2];
+          gametime.run("position", [gametime.user.position + "," + (car.position.x + "," + car.position.y + "," + car.position.z)]);
+        }
+        if (message.startsWith("click_event")) {
+          let className = message.split("-").splice(1).join("-");
+          gametime.run("click", [gametime.user.position + "," + className]);
         }
       });
     </script>
