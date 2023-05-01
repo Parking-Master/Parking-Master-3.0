@@ -106,8 +106,11 @@
           screen = player2Screen;
         }
         screen.contentWindow.postMessage("position_getter", "*");
-
         screen.contentWindow.postMessage("theme_setter-" + team, "*");
+
+        player1Screen.contentWindow.postMessage("low_performance", "*");
+        player2Screen.contentWindow.postMessage("low_performance", "*");
+
         player1Screen == screen ? player2Screen.contentWindow.postMessage("theme_setter-" + (team == "red" ? "blue" : "red"), "*") : player1Screen.contentWindow.postMessage("theme_setter-" + (team == "red" ? "blue" : "red"), "*");
       }, 100);
       window.addEventListener("message", (e) => {

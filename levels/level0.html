@@ -326,6 +326,7 @@
           if (Math.floor(Math.random() * 10) == 0) {
             new THREE.GLTFLoader().load("models/fx/coin.glb", function(coin) {
               coin = coin.scene;
+              coin.name = "coin";
               coin.position.copy(x.position);
               let rotate = setInterval(() => {
                 coin.rotateY(.03);
@@ -894,6 +895,17 @@
           let element = message.split("-").splice(1).join("-");
           document.querySelector(element).click();
         }
+        if (message.startsWith("low_performance")) {
+          renderer.setPixelRatio(.8);
+          scene.traverse(x => {
+            if (x.name == "coin") {
+              return scene.remove(x);
+            }
+          });
+          setInterval(() => {
+            currentCamera = 1;
+          })
+        }
       });
       window.addEventListener("click", function(e) {
         if (e.target.className) {
@@ -904,7 +916,7 @@
           let className = names.join("");
           parent.postMessage("click_event-" + className, "*");
         }
-      })
+      });
     </script>
   </body>
 </html>
