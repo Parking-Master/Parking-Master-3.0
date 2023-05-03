@@ -36,7 +36,7 @@
         touch-action: none !important;
         cursor: default !important;
       }
-      .banner {
+      .banner #timer {
         position: absolute;
         background: #11111169;
         top: 0;
@@ -67,7 +67,11 @@
   </head>
   <body>
     <div class="banner">
-      <p>10</p>
+      <div style="text-align: center; background: #fff; padding: 3px; width: 100%; top: 0; left: 0; right: 0; position: absolute; z-index: 99999999999999">You are on <span style="color: red" class="team">red</span> team</div>
+      <br>
+      <div id="timer">
+        <p>10</p>
+      </div>
     </div>
     <div class="screen-wrapper">
       <iframe data-player="1" class="screen" src="levels/level0.html"></iframe>
@@ -127,6 +131,10 @@
 
       setInterval(() => {
         team = gametime.user.position == 1 ? "red" : "blue";
+        if (document.querySelector(".team")) {
+          document.querySelector(".team").textContent = team;
+          document.querySelector(".team").style.color = team;
+        }
         let screen;
         if (gametime.user.position == 1) {
           player2Screen.dataset.disabled = "disabled";
@@ -170,27 +178,54 @@
       swal({
         title: "Please wait...",
         text: "Waiting for 1 more player to start",
-        button: false
+        button: false,
+        closeOnClickOutside: false,
+        closeOnEsc: false,
+        closeOnEnterKey: false
       });
+
+      function start() {
+        swal({
+          title: "Starting game...",
+          text: "Hurry! The game is starting. Here is what to do:\n\nBeat the opposing team, by parking in any spot faster than them! The points you earn at the end will depend on how much time is left, your skill, and how much the opposing team tried.\n\nGood luck!",
+          button: false,
+          closeOnClickOutside: false,
+          closeOnEsc: false,
+          closeOnEnterKey: false
+        });
+        setTimeout(() => {
+          swal.close();
+          let seconds = 10;
+          let countdown = setInterval(() => {
+            if (seconds - 1 <= 0) {
+              return (() => {
+                document.querySelector(".banner p").textContent = "GO!";
+                setTimeout(() => document.querySelector(".banner").remove(), 1000);
+                player1Screen.contentWindow.postMessage("swal_close", "*");
+                player2Screen.contentWindow.postMessage("swal_close", "*");
+              })(), clearInterval(countdown);
+            }
+            seconds--;
+            document.querySelector(".banner p").textContent = seconds;
+          }, 1000);
+        }, 4000);
+      }
+
       gametime.make("ping");
       gametime.on("ping", function(id) {
         if (online) return;
         if (gametime.user.id != id) {
           online = true;
-          swal.close();
-          let seconds = 10;
-          setInterval(() => {
-            if (seconds - 1 <= 0) {
-              return document.querySelector(".banner p").textContent = "GO!", setTimeout(() => document.querySelector(".banner").remove(), 1000);
-            }
-            seconds--;
-            document.querySelector(".banner p").textContent = seconds;
-          }, 1000);
+          start();
         }
       });
-      setInterval(() => {
-        gametime.run("ping", [gametime.user.id]);
-      }, 1000);
+      window.addEventListener("load", function() {
+        setTimeout(() => {
+          setInterval(() => {
+            gametime.run("ping", [gametime.user.id]);
+          }, 1000);
+        }, 3000);
+      });
     </script>
   </body>
 </html>

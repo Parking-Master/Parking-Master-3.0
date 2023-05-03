@@ -906,6 +906,9 @@
             currentCamera = 1;
           });
         }
+        if (message == "swal_close") {
+          swal.close();
+        }
       });
       window.addEventListener("click", function(e) {
         if (e.target.className) {
