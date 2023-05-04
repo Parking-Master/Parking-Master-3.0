@@ -298,19 +298,36 @@
           }
           let file = document.querySelector(".swal-content").querySelector("input").files[0];
           getBase64(file, (image) => {
-            new Parse.Query(Parse.Object.extend("User")).find("objectId").then((e=>{for(let t=0;t<e.length;t++){let r=new Parse.User;r.set("objectId",e[t].id),r.get("username")==localStorage["u-username"]&&(()=>{
-              let user = r;
-              user.set("backgroundImage", image);
-              user.save().then((e) => {
-                console.log(e);
-              });
-            })();
-          }}));
+            new Parse.Query(Parse.Object.extend("User")).find("objectId").then(e => {
+              for (let t = 0; t < e.length; t++) {
+                let r = new Parse.User;
+                r.set("objectId", e[t].id);
+                if (r.get("username") == localStorage["u-username"]) {
+                  let user = r;
+                  user.set("backgroundImage", image);
+                  user.save().then((e) => {
+                    console.log(e);
+                  });
+                }
+              }
+            });
           });
         });
       }
       if (localStorage["u-username"] && localStorage["u-password"]) {
-        new Parse.Query(Parse.Object.extend("User")).find("objectId").then((e=>{for(let t=0;t<e.length;t++){let r=new Parse.User;r.set("objectId",e[t].id),r.get("username")==localStorage["u-username"]&&(()=>{let e=r;e.get("backgroundImage")&&(document.body.style.backgroundPosition="0 0",document.body.style.backgroundImage="url("+(e.get("backgroundImage"))+")")})()}}));
+        new Parse.Query(Parse.Object.extend("User")).find("objectId").then(e => {
+          for (let t = 0; t < e.length; t++) {
+            let r = new Parse.User;
+            r.set("objectId", e[t].id);
+            if (r.get("username") == localStorage["u-username"]) {
+              let user = r;
+              if (user.get("backgroundImage")) {
+                document.body.style.backgroundPosition = "0 0";
+                document.body.style.backgroundImage = "url(" + user.get("backgroundImage") + ")";
+              }
+            }
+          }
+        });
       }
       function clearData() {
         swal({
