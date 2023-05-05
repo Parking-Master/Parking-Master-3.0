@@ -195,6 +195,7 @@
     </div>
     <img id="rearcamera" src="images/rearcamera.png" style="position:absolute;display:none;width:100%;height:100%;margin:0;padding:0;left:0;top:0;bottom:0;right:0;border:none;" />
     <script>
+      let multiplayer = false;
       details = {
         level: 1,
         points: 0,
@@ -448,7 +449,7 @@
         document.querySelector(".shifter").value = transmission[0].toUpperCase().trim();
         if (currentCamera != 2) {
           document.querySelector("#rearcamera").style.display = "none";
-          renderer.setPixelRatio(window.devicePixelRatio / 1.3);
+          multiplayer || renderer.setPixelRatio(window.devicePixelRatio / 1.3);
         }
         if (currentCamera == 0) {
           camera.position.set(car.position.x, car.position.y + .3, car.position.z);
@@ -840,6 +841,7 @@
           scene.traverse(x => (x.castShadow = false, x.receiveShadow = false));
           renderer.shadowMap.needsUpdate = true;
         } else {
+          if (multiplayer) return;
           scene.traverse(x => (x.name.includes("Collider") || (x.castShadow = true, x.receiveShadow = true)));
         }
       }, 1000);
@@ -847,12 +849,11 @@
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, .1, 1000);
         camera.fov = 60;
         camera.updateProjectionMatrix();
-        const renderer = new THREE.WebGLRenderer({ preserveDrawingBuffer: true, antialias: true });
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(200, 150);
         renderer.useLegacyLights = false;
         renderer.outputEncoding = THREE.sRGBEncoding;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.setPixelRatio(.4);
         renderer.domElement.className = "backup-camera";
         document.querySelector(".ui").querySelector(".camera").appendChild(renderer.domElement);
         function animate() {
@@ -862,6 +863,7 @@
           camera.rotation.copy(j.rotation);
           camera.updateMatrix();
           camera.translateZ(-15);
+          renderer.setPixelRatio(multiplayer ? .25 : .4);
           renderer.render(scene, camera);
           requestAnimationFrame(animate);
         }
@@ -896,8 +898,12 @@
           document.querySelector(element).click();
         }
         if (message.startsWith("low_performance")) {
-          renderer.setPixelRatio(.3);
+          multiplayer = true;
+          renderer.setPixelRatio(.9);
+          renderer.shadowMap.enabled = false;
           scene.traverse(x => {
+            x.castShadow = false;
+            x.receiveShadow = false;
             if (x.name == "coin") {
               return scene.remove(x);
             }
