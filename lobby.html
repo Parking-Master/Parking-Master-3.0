@@ -130,7 +130,7 @@
       team = "red";
 
       setInterval(() => {
-        team = gametime.user.position == 1 ? "red" : "blue";
+        team = (new URLSearchParams(location.search).get("team") || (gametime.user.position == 1 ? "red" : "blue"));
         if (document.querySelector(".team")) {
           document.querySelector(".team").textContent = team;
           document.querySelector(".team").style.color = team;
@@ -171,6 +171,28 @@
         if (message.startsWith("click_event")) {
           let className = message.split("-").splice(1).join("-");
           gametime.run("click", [gametime.user.position + "," + className]);
+        }
+        if (message.startsWith("parked")) {
+          let teamWon = message.split("-")[1];
+          if (teamWon == team) {
+            swal({
+              title: "Round 1 won!",
+              text: "Keep going! There are 2 rounds left.\n\nPlease wait, round starting...",
+              button: false,
+            });
+            setTimeout(() => {
+              location.replace(location.href + "&round=2&team=" + team);
+            }, 5000);
+          } else {
+            swal({
+              title: "Round 1 lost",
+              text: "Don't worry! There are still 2 rounds left.\n\nPlease wait, round starting...",
+              button: false,
+            });
+            setTimeout(() => {
+              location.replace(location.href + "&round=2&team=" + team);
+            }, 5000);
+          }
         }
       });
 
