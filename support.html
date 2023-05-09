@@ -47,8 +47,15 @@
         left: 10%;
         padding: 15px;
         margin: 5px;
+        margin-bottom: 0 !important;
+        border-bottom: 1px solid #ccc;
+        cursor: default !important;
+      }
+      div.section:hover {
+        background: #dedede;
       }
     </style>
+    <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
   </head>
   <body>
     <h1 class="center heading-1" style="margin-top: 80px">How can we help?</h1>
@@ -56,12 +63,36 @@
     <br style="margin-bottom: 200px">
     <div class="wrapper-1">
       <h2 class="center heading-2">FAQ</h2>
-      <div class="section">How do I play the game? <span style="float: right; text-align: right">+</span></div>
-      <div class="section">Is there a store? <span style="float: right; text-align: right">+</span></div>
-      <div class="section">How do I use multiplayer? <span style="float: right; text-align: right">+</span></div>
-      <div class="section">How do I sign up? <span style="float: right; text-align: right">+</span></div>
-      <div class="section">How do I reset my password? <span style="float: right; text-align: right">+</span></div>
+      <div>
+        <div class="section" onclick="toggleFAQ(this)">How do I play the game? <span style="float: right; text-align: right">+</span></div>
+        <p style="display: none; position: relative; background: #f9f9f9; width: 80%; left: 10%; padding: 15px; margin: 5px; margin-top: 0 !important">To play, go to the <b>Main Menu</b> and click <button>PLAY</button> (to play multiplayer, see "How do I use multiplayer?")</p>
+      </div>
+      <div>
+        <div class="section" onclick="toggleFAQ(this)">Is there a store? <span style="float: right; text-align: right">+</span></div>
+        <p style="display: none; position: relative; background: #f9f9f9; width: 80%; left: 10%; padding: 15px; margin: 5px; margin-top: 0 !important">Yes, there is a store. In The Store, you can purchase New Cars, XP Boosters, different Game Modes, and more! Using completely fake currency.</p>
+      </div>
+      <div>
+        <div class="section" onclick="toggleFAQ(this)">How do I use multiplayer? <span style="float: right; text-align: right">+</span></div>
+        <p style="display: none; position: relative; background: #f9f9f9; width: 80%; left: 10%; padding: 15px; margin: 5px; margin-top: 0 !important">In multiplayer, you can invite friends, play with random players, or even practice with bots! Go to the <b>Main Menu</b> and click <button>MULTIPLAYER</button>. If you would like to start your own lobby, you can do that via <button>CREATE LOBBY</button> > Enter name, and wait for players to join. Or, if you'd like to just join a game, select <button>VIEW LOBBIES</button> and click an active lobby room.</p>
+      </div>
+      <div>
+        <div class="section" onclick="toggleFAQ(this)">How do I sign up? <span style="float: right; text-align: right">+</span></div>
+        <p style="display: none; position: relative; background: #f9f9f9; width: 80%; left: 10%; padding: 15px; margin: 5px; margin-top: 0 !important">Signing up is completely free! It's also important if you want to bring your game on the go, and save your rewards and points. Go to the <b>Main Menu</b> and click <button>CUSTOMIZE</button>, and select <u>Log in user</u>. If you just need to log in, you can continue here. If you still want to sign up, click <u>signup instead</u>, then fill in your information.</p>
+      </div>
+      <div>
+        <div class="section" onclick="toggleFAQ(this)">How do I reset my password? <span style="float: right; text-align: right">+</span></div>
+        <p style="display: none; position: relative; background: #f9f9f9; width: 80%; left: 10%; padding: 15px; margin: 5px; margin-top: 0 !important">Did you forget your password? It's fine, we all do that! You can easily reset by going to <b>Main Menu</b> and clicking <button>CUSTOMIZE</button>, then selecting <u>Log in user</u>. There, you can click <u>Forgot your password?</u> and put in the email you signed up with. In the email, click the link and enter the code and New Password.</p>
+      </div>
       <br>
     </div>
+    <script>
+      function toggleFAQ(div) {
+        if (div.nextElementSibling.style.display == "block") {
+          div.nextElementSibling.style.display = "none";
+        } else {
+          div.nextElementSibling.style.display = "block";
+        }
+      }
+    </script>
   </body>
 </html>
