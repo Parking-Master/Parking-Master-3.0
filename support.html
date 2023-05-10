@@ -55,7 +55,6 @@
         background: #dedede;
       }
     </style>
-    <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
   </head>
   <body>
     <h1 class="center heading-1" style="margin-top: 80px">How can we help?</h1>
@@ -93,6 +92,42 @@
           div.nextElementSibling.style.display = "block";
         }
       }
+      let helpList = {};
+      fetch("/help.json").then((res) => res.json()).then((e) => {
+        helpList = e;
+      });
+
+      document.querySelector(".input").addEventListener("keydown", function() {
+        let text = this.value.toLowerCase().trim();
+        let responses = [];
+        let otherResponses = [];
+        if (!text) return;
+        Object.keys(helpList).forEach(response => {
+          otherResponses.push(response);
+          response = response.toLowerCase().trim();
+          if (response.startsWith(text)) {
+            responses.push(response);
+          }
+          text.split(" ").forEach(x => {
+            if ((response.match(new RegExp(x, "g")) || []).length >= 2) {
+              responses.push(response);
+            }
+          });
+        });
+        if (responses.length <= 0) {
+          otherResponses.forEach(x => {
+            if (x.includes(text)) {
+              responses.push(x);
+            }
+          });
+        }
+        responses = [...new Set(responses)];
+        responses.forEach(x => {
+          document.querySelector(".help-wrapper").innerHTML += `
+          ${x}
+          `;
+        });
+      });
     </script>
   </body>
 </html>
