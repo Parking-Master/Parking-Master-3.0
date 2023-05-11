@@ -54,11 +54,41 @@
       div.section:hover {
         background: #dedede;
       }
+      .help-wrapper {
+        position: relative;
+        text-align: center;
+        width: 20%;
+        left: 40%;
+        padding-top: 20px;
+      }
+      .help-response {
+        display: block;
+        margin: 5px;
+        padding: 5px;
+        background: #fff;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.24);
+        cursor: pointer;
+      }
+      .swal-button {
+        color: #fff !important;
+        background: #333 !important;
+        width: unset !important;
+        box-shadow: none !important;
+      }
+      .swal-content__input {
+        border: 1px solid #333 !important;
+      }
+      .swal-modal {
+        border-radius: 1px;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.24);
+      }
     </style>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
   </head>
   <body>
     <h1 class="center heading-1" style="margin-top: 80px">How can we help?</h1>
     <input placeholder="Type something here..." class="input">
+    <div class="help-wrapper"></div>
     <br style="margin-bottom: 200px">
     <div class="wrapper-1">
       <h2 class="center heading-2">FAQ</h2>
@@ -92,13 +122,18 @@
           div.nextElementSibling.style.display = "block";
         }
       }
+
       let helpList = {};
       fetch("/help.json").then((res) => res.json()).then((e) => {
         helpList = e;
       });
 
       document.querySelector(".input").addEventListener("keydown", function() {
-        let text = this.value.toLowerCase().trim();
+        help();
+      });
+
+      function help() {
+        let text = document.querySelector(".input").value.toLowerCase().trim();
         let responses = [];
         let otherResponses = [];
         if (!text) return;
@@ -122,12 +157,26 @@
           });
         }
         responses = [...new Set(responses)];
+        document.querySelector(".help-wrapper").innerHTML = "";
         responses.forEach(x => {
+          x = x.toLowerCase().split(" ").map(function(word) { return word == "i" ? word[0].toUpperCase() + word.substr(1) : word; }).join(" ");
+          x = x.charAt(0).toUpperCase() + x.slice(1);
           document.querySelector(".help-wrapper").innerHTML += `
-          ${x}
+          <div class="help-response" onclick="extendInfo(this, '${btoa(Object.values(helpList)[Object.keys(helpList).indexOf(x)])}')">${x}</div>
           `;
         });
+      }
+      window.addEventListener("load", function() {
+        if (location.hash) {
+          document.querySelector(".input").value = location.hash.split("#").splice(1).join("#");
+          setTimeout(() => help(true), 100);
+        }
       });
+      
+      function extendInfo(e, i) {
+        i = atob(i);
+        swal(i);
+      }
     </script>
   </body>
 </html>
