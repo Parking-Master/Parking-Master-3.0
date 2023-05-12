@@ -632,11 +632,12 @@
             closestSpace.lookAt(car.position);
             closestSpace.rotation.set(0, closestSpace.rotation.y, 0);
             let rotate = setInterval(() => {
-              if ((car.rotation.y - (Math.PI / 2)).toFixed(1) == closestSpace.rotation.y.toFixed(1)) {
+              console.log((car.rotation.y - (Math.PI / 2)).toFixed(1), ((closestSpace.rotation.y.toFixed(1) - 0) - (Math.PI / 2)).toFixed(1));
+              if ((car.rotation.y - (Math.PI / 2)).toFixed(1) == ((closestSpace.rotation.y.toFixed(1) - 0) - (Math.PI / 2)).toFixed(1)) {
                 return (() => {
                   setTimeout(() => {
                     let rotate = setInterval(() => {
-                      if ((car.rotation.y - (Math.PI / 2)).toFixed(1) == closestSpace.rotation.y.toFixed(1)) {
+                      if ((car.rotation.y - (Math.PI / 2)).toFixed(1) == ((closestSpace.rotation.y.toFixed(1) - 0) - (Math.PI / 2)).toFixed(1)) {
                         clearInterval(rotate);
                       }
                       car.rotateY(.02);
@@ -780,7 +781,7 @@
               icon: "images/icons/swal/success.blue.png",
               title: messages[Math.floor(Math.random() * messages.length)],
               text: "You parked in a blue spot! You earned an extra point!",
-              button: "Next level",
+              button: "Bonus level",
               closeOnClickOutside: true,
               closeOnEnterKey: true
             }).then(function() {
@@ -794,7 +795,7 @@
             icon: "success",
             title: messages[Math.floor(Math.random() * messages.length)],
             text: "You parked! Click Next to continue.",
-            button: "Next level",
+            button: "Bonus level",
             closeOnClickOutside: true,
             closeOnEnterKey: true
           }).then(function() {
