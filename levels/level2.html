@@ -638,7 +638,7 @@
                   setTimeout(() => {
                     let rotate = setInterval(() => {
                       if ((car.rotation.y - (Math.PI / 2)).toFixed(1) == ((closestSpace.rotation.y.toFixed(1) - 0) - (Math.PI / 2)).toFixed(1)) {
-                        clearInterval(rotate);
+                          clearInterval(rotate);
                       }
                       car.rotateY(.02);
                     });
@@ -761,7 +761,7 @@
         }
       });
       function park() {
-        if (parkDetector() && (Math.abs(THREE.MathUtils.radToDeg(car.rotation.y)) >= 75 && Math.abs(THREE.MathUtils.radToDeg(car.rotation.y)) <= 105)) {
+        if (parkDetector() && ((Math.abs(THREE.MathUtils.radToDeg(car.rotation.y)) >= 75 && Math.abs(THREE.MathUtils.radToDeg(car.rotation.y)) <= 105) || (THREE.MathUtils.radToDeg(car.rotation.y) <= 15 && THREE.MathUtils.radToDeg(car.rotation.y) >= -15))) {
           if (parkingStatus.space == "danger") {
             let messages = ["Oh no!", "Oops...", "Game over"];
             return swal({
@@ -781,7 +781,7 @@
               icon: "images/icons/swal/success.blue.png",
               title: messages[Math.floor(Math.random() * messages.length)],
               text: "You parked in a blue spot! You earned an extra point!",
-              button: "Bonus level",
+              button: "Next level",
               closeOnClickOutside: true,
               closeOnEnterKey: true
             }).then(function() {
@@ -795,7 +795,7 @@
             icon: "success",
             title: messages[Math.floor(Math.random() * messages.length)],
             text: "You parked! Click Next to continue.",
-            button: "Bonus level",
+            button: "Next level",
             closeOnClickOutside: true,
             closeOnEnterKey: true
           }).then(function() {
