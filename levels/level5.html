@@ -159,7 +159,7 @@
           <small>
             Use the navigation controls to park in the designated spot.
             <br>
-            There are (<span class="danger-spots">1</span>) danger spots, (<span class="blue-spots">2</span>) blue spots, and (<span class="reserved-spots">3</span>) handicap spots.
+            There are (<span class="danger-spots">0</span>) danger spots, (<span class="blue-spots">0</span>) blue spots, and (<span class="reserved-spots">0</span>) handicap spots.
           </small>
         </p>
       </div>
@@ -200,7 +200,7 @@
       details = {
         level: 1,
         points: 0,
-        time: 30
+        time: 45
       };
 
       THREE.Sound = function Sound(source = null, object = new THREE.Object3D, callback = function(sound) {}, preserve3d = true, volume = 5, loop) {
@@ -785,6 +785,7 @@
               closeOnClickOutside: true,
               closeOnEnterKey: true
             }).then(function() {
+              pauseCountdown = true;
               details.points += 2;
               localStorage.setItem("points", details.points);
               parent.postMessage("parked-" + document.querySelector(".radar-globe").style.borderRightColor, "*");
@@ -800,6 +801,7 @@
             closeOnClickOutside: true,
             closeOnEnterKey: true
           }).then(function() {
+            pauseCountdown = true;
             details.points += 1;
             localStorage.setItem("points", details.points);
             parent.postMessage("parked-" + document.querySelector(".radar-globe").style.borderRightColor, "*");

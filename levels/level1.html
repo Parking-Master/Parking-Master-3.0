@@ -771,6 +771,7 @@
               closeOnClickOutside: true,
               closeOnEnterKey: true
             }).then(function() {
+              pauseCountdown = true;
               details.points += 2;
               localStorage.setItem("points", details.points);
               location.replace(LevelMapping.nextLevel);
@@ -785,6 +786,7 @@
             closeOnClickOutside: true,
             closeOnEnterKey: true
           }).then(function() {
+            pauseCountdown = true;
             details.points += 1;
             localStorage.setItem("points", details.points);
             location.replace(LevelMapping.nextLevel);

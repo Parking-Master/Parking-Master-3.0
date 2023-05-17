@@ -786,6 +786,7 @@
               closeOnClickOutside: true,
               closeOnEnterKey: true
             }).then(function() {
+              pauseCountdown = true;
               details.points += 2;
               localStorage.setItem("points", details.points);
               parent.postMessage("parked-" + document.querySelector(".radar-globe").style.borderRightColor, "*");
@@ -801,6 +802,7 @@
             closeOnClickOutside: true,
             closeOnEnterKey: true
           }).then(function() {
+              pauseCountdown = true;
             details.points += 1;
             localStorage.setItem("points", details.points);
             parent.postMessage("parked-" + document.querySelector(".radar-globe").style.borderRightColor, "*");

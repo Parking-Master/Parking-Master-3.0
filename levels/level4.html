@@ -158,7 +158,7 @@
           <small>
             Use the navigation controls to park in the designated spot.
             <br>
-            There are (<span class="danger-spots">1</span>) danger spots, (<span class="blue-spots">2</span>) blue spots, and (<span class="reserved-spots">3</span>) handicap spots.
+            There are (<span class="danger-spots">0</span>) danger spots, (<span class="blue-spots">0</span>) blue spots, and (<span class="reserved-spots">0</span>) handicap spots.
           </small>
         </p>
       </div>
@@ -199,7 +199,7 @@
       details = {
         level: 1,
         points: 0,
-        time: 30
+        time: 35
       };
 
       THREE.Sound = function Sound(source = null, object = new THREE.Object3D, callback = function(sound) {}, preserve3d = true, volume = 5, loop) {
@@ -300,6 +300,7 @@
       scene.add(camera);
       new THREE.GLTFLoader().load("models/vehicles/mini_cooper.glb", (car) => {
         window.car = car.scene;
+        car.scene.rotateY(Math.PI / 2);
         scene.add(car.scene);
         new THREE.GLTFLoader().load("models/characters/driver.glb", (e) => {
           character = e.scene;
@@ -343,12 +344,7 @@
             });
           }
         });
-        let chosenDangerSpots = [spaces.valid[Math.floor(Math.random() * spaces.valid.length)]];
-        chosenDangerSpots.forEach(x => {
-          spaces.valid[spaces.valid.indexOf(x)].name += "-danger";
-        });
-        document.querySelector(".danger-spots").textContent = chosenDangerSpots.length;
-        let chosenBlueSpots = [spaces.valid[Math.floor(Math.random() * spaces.valid.length)], spaces.valid[Math.floor(Math.random() * spaces.valid.length)]];
+        let chosenBlueSpots = [spaces.valid[Math.floor(Math.random() * spaces.valid.length)]];
         chosenBlueSpots.forEach(x => {
           spaces.valid[spaces.valid.indexOf(x)].name += "-blue";
         });
@@ -760,7 +756,7 @@
         }
       });
       function park() {
-        if (parkDetector() && (Math.abs(THREE.MathUtils.radToDeg(car.rotation.y)) >= 75 && Math.abs(THREE.MathUtils.radToDeg(car.rotation.y)) <= 105)) {
+        if (parkDetector() && ((Math.abs(THREE.MathUtils.radToDeg(car.rotation.y)) >= -15 && Math.abs(THREE.MathUtils.radToDeg(car.rotation.y)) <= 15) || (Math.abs(THREE.MathUtils.radToDeg(car.rotation.y)) >= 75 && Math.abs(THREE.MathUtils.radToDeg(car.rotation.y)) <= 105))) {
           if (parkingStatus.space == "danger") {
             let messages = ["Oh no!", "Oops...", "Game over"];
             return swal({
@@ -784,6 +780,7 @@
               closeOnClickOutside: true,
               closeOnEnterKey: true
             }).then(function() {
+              pauseCountdown = true;
               details.points += 2;
               localStorage.setItem("points", details.points);
               parent.postMessage("parked-" + document.querySelector(".radar-globe").style.borderRightColor, "*");
@@ -799,6 +796,7 @@
             closeOnClickOutside: true,
             closeOnEnterKey: true
           }).then(function() {
+            pauseCountdown = true;
             details.points += 1;
             localStorage.setItem("points", details.points);
             parent.postMessage("parked-" + document.querySelector(".radar-globe").style.borderRightColor, "*");
