@@ -310,7 +310,7 @@
       currentCamera = 1;
       document.body.insertBefore(renderer.domElement, document.body.firstChild);
       scene.add(camera);
-      new THREE.GLTFLoader().load("models/vehicles/mini_cooper.glb", (car) => {
+      new THREE.GLTFLoader().load("models/vehicles/" + (localStorage["u-car"] || "mini_cooper") + ".glb", (car) => {
         window.car = car.scene;
         scene.add(car.scene);
         new THREE.GLTFLoader().load("models/characters/driver.glb", (e) => {
@@ -774,11 +774,11 @@
               icon: "images/icons/swal/free.car.png",
               title: "Awesome!",
               text: "You earned a free car!",
-              button: "Next level",
+              buttons: ["Use car", "Next level"],
               closeOnClickOutside: true,
               closeOnEnterKey: true
             }).then(function() {
-              location.replace(LevelMapping.nextLevel);
+              // location.replace(LevelMapping.nextLevel);
             });
             document.querySelector(".swal-icon").style.width = "20%";
             return;
@@ -799,20 +799,40 @@
             document.querySelector(".swal-icon").style.width = "20%";
             return;
           }
-          let messages = ["Good!", "Good job!", "Amazing!", "Cool!"];
-          swal({
-            icon: "success",
-            title: messages[Math.floor(Math.random() * messages.length)],
-            text: "You parked! Click Next to continue.",
-            button: "Next level",
-            closeOnClickOutside: true,
-            closeOnEnterKey: true
-          }).then(function() {
-            details.points += 1;
-            localStorage.setItem("points", details.points);
-            location.replace(LevelMapping.nextLevel);
-          });
-          document.querySelector(".swal-button").style = "background:#6cc22e!important";
+          if (parkingStatus.space == "-10p") {
+            swal({
+              icon: "images/icons/swal/points.png",
+              title: "Nice job!",
+              text: "You earned 10 points!",
+              button: "Next level",
+              closeOnClickOutside: true,
+              closeOnEnterKey: true
+            }).then(function() {
+              details.points += 10;
+              localStorage.setItem("points", details.points);
+              location.replace(LevelMapping.nextLevel);
+            });
+            document.querySelector(".swal-icon").style.width = "20%";
+            return;
+          }
+          if (parkingStatus.space == "-skip_level") {
+            swal({
+              icon: "images/icons/swal/skip.level.png",
+              title: "Nice job!",
+              text: "You can skip your next level for free!",
+              buttons: ["Skip next level", "Go to next level"],
+              closeOnClickOutside: true,
+              closeOnEnterKey: true
+            }).then(function(e) {
+              details.points += 1;
+              localStorage.setItem("points", details.points);
+              if (e) {
+                location.replace(LevelMapping.nextLevel);
+              } else location.replace(LevelMapping.nextNextLevel);
+            });
+            document.querySelector(".swal-icon").style.width = "20%";
+            return;
+          }
         } else {
           if (parkingStatus.space == "reserved") {
             let messages = ["Oh no!", "Oops...", "Game over"];

@@ -9,5 +9,7 @@
   }
   console.log(levels);
   let nextLevel = levels[levels.indexOf(location.pathname.replace(".html", "").split("/").splice(2).join("/")) + 1];
+  let nextNextLevel = levels[levels.indexOf(location.pathname.replace(".html", "").split("/").splice(2).join("/")) + 2];
   LevelMapping.nextLevel = `/levels/${nextLevel}.html`;
+  LevelMapping.nextNextLevel = `/levels/${nextNextLevel}.html`;
 })();
