@@ -224,6 +224,7 @@
           localStorage.setItem("u-email", _email);
           localStorage.setItem("u-username", document.getElementById("username").value);
           localStorage.setItem("u-password", document.getElementById("password").value);
+          localStorage.setItem("u-items", user.get("items").toString());
           setTimeout(() => {
             location.replace("/");
           }, 1000);

@@ -184,6 +184,7 @@
             user.set("t_email", _email);
             user.set("username", _username);
             user.set("password", _password);
+            user.set("items", ["mini_cooper"]);
             try {
               user = await user.save();
               if (user !== null) {

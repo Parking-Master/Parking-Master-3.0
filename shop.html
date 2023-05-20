@@ -4,10 +4,152 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shop - Parking Master 3.0</title>
+    <style>
+      @font-face {
+        font-family: "Modern";
+        src: url(fonts/GlacialIndifference.ttf);
+      }
+      html, body {
+        font-family: "Modern", Arial;
+      }
+      .row {
+        position: relative;
+        width: calc(100 - 10px);
+        height: 150px;
+        background: #fefefe;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.24);
+        padding: 10px;
+        margin-bottom: 10px;
+      }
+      .row #row-img {
+        height: 100%;
+        float: left;
+        border-right: 2px solid #999;
+      }
+      .row h2 {
+        position: relative;
+        left: 100px;
+        color: #333;
+        word-wrap: break-word;
+        width: 80%;
+      }
+      .row .price {
+        position: relative;
+        float: right;
+        right: 100px !important;
+        border-bottom: 1px solid #333;
+      }
+      button {
+        background: #e9e9ed;
+        border: 1px solid #8f8f9d;
+        border-radius: 4px;
+      }
+      button:hover {
+        background: #cecece;
+      }
+      .swal-overlay {
+        z-index: 500 !important;
+      }
+      .swal-button {
+        background: #333 !important;
+        box-shadow: none !important;
+        color: #fff !important;
+        width: 100% !important;
+      }
+      .swal-modal * {
+        font-family: Arial, Helvetica, sans-serif !important;
+      }
+    </style>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
   </head>
   <body>
     <div class="wrapper">
-      <div class="row"><img src="shop/images/cars/mini_cooper.png"></div>
+      <div class="row" data-price="0" data-item="mini_cooper">
+        <img src="shop/images/cars/mini_cooper.png" id="row-img">
+        <h2>
+          2014 Mini Cooper-S
+          <br>
+          <p style="font-size: 10px; font-family: Arial, Helvetica, sans-serif; font-weight: 100;">The Classic Mini Cooper has about 189-HP, RWD and Automatic Collision Sensors (ACS). It is available for free on any new or old account.</p>
+          <button class="preview" onclick="preview(this)">Preview</button> <button onclick="purchase(this)" class="buy">Buy</button>
+          <div class="price">
+            <img src="shop/images/icons/point.png" style="width: 60px; vertical-align: middle; margin-top: -6px"><span style="color: #333">0</span>&ThickSpace;&ThickSpace;
+          </div>
+        </h2>
+      </div>
+      <div class="row" data-price="1900" data-item="countach_lamborghini">
+        <img src="shop/images/cars/countach_lamborghini.png" id="row-img">
+        <h2>
+          2022 Countach Lamborghini
+          <br>
+          <p style="font-size: 10px; font-family: Arial, Helvetica, sans-serif; font-weight: 100;">The Lamborghini (Model-Contach) is a very aerodynamic vehicle, kind of like a plane, and has very high horse power too (374 HP).</p>
+          <button class="preview" onclick="preview(this)">Preview</button> <button onclick="purchase(this)" class="buy">Buy</button>
+          <div class="price">
+            <img src="shop/images/icons/point.png" style="width: 60px; vertical-align: middle; margin-top: -6px"><span style="color: #333">1,900</span>&ThickSpace;&ThickSpace;
+          </div>
+        </h2>
+      </div>
+      <div class="row" data-price="5250" data-item="tesla_roadster">
+        <img src="shop/images/cars/tesla_roadster.png" id="row-img">
+        <h2>
+          2019 Tesla Roadster
+          <br>
+          <p style="font-size: 10px; font-family: Arial, Helvetica, sans-serif; font-weight: 100;">The Lamborghini (Model-Contach) is a very aerodynamic vehicle, kind of like a plane, and has very high horse power too (374 HP).</p>
+          <button class="preview" onclick="preview(this)">Preview</button> <button onclick="purchase(this)" class="buy">Buy</button>
+          <div class="price">
+            <img src="shop/images/icons/point.png" style="width: 60px; vertical-align: middle; margin-top: -6px"><span style="color: #333">5,250</span>&ThickSpace;&ThickSpace;
+          </div>
+        </h2>
+      </div>
     </div>
+    <script>
+      function purchase(el) {
+        let parent = el.parentElement.parentElement;
+        let price = parent.dataset.price - 0;
+        if (localStorage["u-email"] && localStorage["u-password"]) {
+          if (localStorage["points"] - 0 >= price) {
+            swal({
+              text: "Are you sure you want to purchase \"" + parent.dataset.item.split("_").join(" ") + "\" for " + price + " points?",
+              buttons: ["No", "Yes"]
+            }).then((e) => {
+              if (e) {
+                swal({
+                  text: "Purchasing...",
+                  button: "Cancel"
+                }).then(() => location.reload());
+                setTimeout(() => {
+                  // Purchase it
+                }, 1500);
+              }
+            })
+          } else {
+            swal("You do not have enough points to purchase this item!");
+          }
+        } else {
+          swal("You must be logged in to buy anything!");
+        }
+      }
+
+      document.querySelectorAll(".row").forEach(x => {
+        if (localStorage["u-email"] && localStorage["u-password"]) {
+          if (localStorage["u-items"].split(",").indexOf(x.dataset.item) > -1) {
+            x.querySelector("button.preview").textContent = "Equip";
+            x.querySelector("button.preview").setAttribute("onclick", "equip(this)");
+            x.querySelector("button.preview").className = "equip";
+            x.querySelector("button.buy").textContent = "Sell";
+            x.querySelector("button.buy").setAttribute("onclick", "sell(this)");
+            x.querySelector("button.buy").className = "sell";
+            x.querySelector(".price").innerHTML = `
+            <span style="color: #999">Owned</span>
+            `;
+          }
+        }
+      });
+
+      function preview(el) {
+        let parent = el.parentElement.parentElement;
+        let type = parent.dataset.item;
+        location.assign("playground/test_site.html?car=" + type);
+      }
+    </script>
   </body>
 </html>
