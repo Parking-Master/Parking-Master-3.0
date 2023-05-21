@@ -61,6 +61,7 @@
       }
     </style>
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script src="scripts/user/user.js"></script>
   </head>
   <body>
     <div class="wrapper">
@@ -93,7 +94,7 @@
         <h2>
           2019 Tesla Roadster
           <br>
-          <p style="font-size: 10px; font-family: Arial, Helvetica, sans-serif; font-weight: 100;">The Lamborghini (Model-Contach) is a very aerodynamic vehicle, kind of like a plane, and has very high horse power too (374 HP).</p>
+          <p style="font-size: 10px; font-family: Arial, Helvetica, sans-serif; font-weight: 100;">Get around in style in this brand-new 2019 Tesla Roadster. Fully electric model.</p>
           <button class="preview" onclick="preview(this)">Preview</button> <button onclick="purchase(this)" class="buy">Buy</button>
           <div class="price">
             <img src="shop/images/icons/point.png" style="width: 60px; vertical-align: middle; margin-top: -6px"><span style="color: #333">5,250</span>&ThickSpace;&ThickSpace;
@@ -105,8 +106,8 @@
       function purchase(el) {
         let parent = el.parentElement.parentElement;
         let price = parent.dataset.price - 0;
-        if (localStorage["u-email"] && localStorage["u-password"]) {
-          if (localStorage["points"] - 0 >= price) {
+        if (userMan.isLoggedIn) {
+          if (userMan.get("points") - 0 >= price) {
             swal({
               text: "Are you sure you want to purchase \"" + parent.dataset.item.split("_").join(" ") + "\" for " + price + " points?",
               buttons: ["No", "Yes"]
@@ -116,9 +117,13 @@
                   text: "Purchasing...",
                   button: "Cancel"
                 }).then(() => location.reload());
+                userMan.set("points", userMan.get("points") - price, () => {}, ["username", "t_password"]);
+                let newItems = userMan.get("items");
+                newItems.push(parent.dataset.item);
+                userMan.set("items", newItems, () => {}, ["username", "t_password"]);
                 setTimeout(() => {
-                  // Purchase it
-                }, 1500);
+                  location.reload();
+                }, 2500);
               }
             })
           } else {
@@ -128,27 +133,78 @@
           swal("You must be logged in to buy anything!");
         }
       }
-
-      document.querySelectorAll(".row").forEach(x => {
-        if (localStorage["u-email"] && localStorage["u-password"]) {
-          if (localStorage["u-items"].split(",").indexOf(x.dataset.item) > -1) {
-            x.querySelector("button.preview").textContent = "Equip";
-            x.querySelector("button.preview").setAttribute("onclick", "equip(this)");
-            x.querySelector("button.preview").className = "equip";
-            x.querySelector("button.buy").textContent = "Sell";
-            x.querySelector("button.buy").setAttribute("onclick", "sell(this)");
-            x.querySelector("button.buy").className = "sell";
-            x.querySelector(".price").innerHTML = `
-            <span style="color: #999">Owned</span>
-            `;
+      
+      window.addEventListener("load", function() {
+        userMan.update(["username", "t_password"]);
+        document.querySelectorAll(".row").forEach(x => {
+          if (userMan.isLoggedIn) {
+            if (userMan.get("items").indexOf(x.dataset.item) > -1) {
+              x.querySelector("button.buy").textContent = "Sell";
+              x.querySelector("button.buy").setAttribute("onclick", "sell(this)");
+              x.querySelector("button.buy").className = "sell";
+              if (userMan.get("car") == x.dataset.item) {
+                x.querySelector("button.preview").textContent = "Equip";
+                x.querySelector("button.preview").onclick = null;
+                x.querySelector("button.preview").disabled = "disabled";
+                x.querySelector("button.preview").style.textDecoration = "line-through";
+                x.querySelector(".price").innerHTML = `
+                <span style="color: #999">Equipped</span>
+                `;
+                return;
+              }
+              x.querySelector(".price").innerHTML = `
+              <span style="color: #999">Owned</span>
+              `;
+              x.querySelector("button.preview").textContent = "Equip";
+              x.querySelector("button.preview").setAttribute("onclick", "equip(this)");
+              x.querySelector("button.preview").className = "equip";
+            }
           }
-        }
+        });
       });
 
       function preview(el) {
         let parent = el.parentElement.parentElement;
         let type = parent.dataset.item;
         location.assign("playground/test_site.html?car=" + type);
+      }
+
+      function equip(el) {
+        let parent = el.parentElement.parentElement;
+        swal({
+          text: "Do you want to equip your main vehicle as \"" + parent.dataset.item.split("_").join(" ") + "\"?",
+          buttons: ["No", "Yes"]
+        }).then((e) => {
+          if (e) {
+            userMan.set("car", parent.dataset.item, () => {
+              location.reload();
+            }, ["username", "t_password"]);
+          }
+        });
+      }
+
+      function sell(el) {
+        let parent = el.parentElement.parentElement;
+        let sellPrice = (parent.dataset.price - 0) / 2;
+        swal({
+          text: "Are you sure you want to sell this item for " + sellPrice + " points?",
+          buttons: ["No", "Yes"]
+        }).then((e) => {
+          if (e) {
+            if (userMan.get("items").length <= 1) {
+              return swal("Error: Could not sell this item. You have no other items of this type that you own.");
+            }
+            let newItems = userMan.get("items");
+            newItems.splice(newItems.indexOf(parent.dataset.item), 1);
+            let otherCar = newItems[0];
+            userMan.set("points", userMan.get("points") - sellPrice, () => {}, ["username", "t_password"]);
+            userMan.set("car", otherCar, () => {}, ["username", "t_password"]);
+            userMan.set("items", newItems, () => {}, ["username", "t_password"]);
+            setTimeout(() => {
+              location.reload();
+            }, 2500);
+          }
+        });
       }
     </script>
   </body>

@@ -220,11 +220,17 @@
       function logIn() {
         let user = Parse.User.logIn(document.getElementById("username").value, document.getElementById("password").value).then(function(user) {
           let _email = user.get("email");
-          swal("Logged in. Redirecting...");
-          localStorage.setItem("u-email", _email);
-          localStorage.setItem("u-username", document.getElementById("username").value);
-          localStorage.setItem("u-password", document.getElementById("password").value);
-          localStorage.setItem("u-items", user.get("items").toString());
+          // localStorage.setItem("u-email", _email);
+          // localStorage.setItem("u-username", document.getElementById("username").value);
+          // localStorage.setItem("u-password", document.getElementById("password").value);
+          // localStorage.setItem("u-items", user.get("items").toString());
+          userMan.logIn(document.getElementById("username").value, document.getElementById("password").value, (d) => {
+            if (d == "Logged in. Redirecting...") {
+              swal("Logged in. Redirecting...");
+            }
+          }, () => {
+            swal("There was a problem during login. Please try again.");
+          }, ["email", "password", "username", "t_email", "t_password", "items", "points", "backgroundImage", "profilePicture", "createdAt", "currentTier", "car"], new URLSearchParams(location.search).get("return") || null);
           setTimeout(() => {
             location.replace("/");
           }, 1000);

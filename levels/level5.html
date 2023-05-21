@@ -134,6 +134,7 @@
       }
     </style>
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script src="scripts/user/user.js"></script>
   </head>
   <body>
     <base href="../">
@@ -303,7 +304,7 @@
       currentCamera = 0;
       document.body.insertBefore(renderer.domElement, document.body.firstChild);
       scene.add(camera);
-      new THREE.GLTFLoader().load("models/vehicles/" + (localStorage["u-car"] || "mini_cooper") + ".glb", (car) => {
+      new THREE.GLTFLoader().load("models/vehicles/" + ((localStorage["userman-email"] ? localStorage["userman-car"].replace(".string", "") : null) || "mini_cooper") + ".glb", (car) => {
         window.car = car.scene;
         scene.add(car.scene);
         new THREE.GLTFLoader().load("models/characters/driver.glb", (e) => {
