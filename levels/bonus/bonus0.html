@@ -416,6 +416,7 @@
         carCrashSound.play();
         car.rotateX(-.1);
         setTimeout(function() {
+          car.position.set(0, 0, 0);
           scene.remove(debris.mesh);
           car.translateX(transmission == "reverse" ? 1 : -1);
           didCrash = false;
