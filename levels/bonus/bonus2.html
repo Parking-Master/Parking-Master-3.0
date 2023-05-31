@@ -133,10 +133,10 @@
       }
     </style>
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-    <script src="/scripts/user/user.js" async defer></script>
+    <script src="scripts/user/user.js"></script>
   </head>
   <body>
-    <base href="../">
+    <base href="../../">
     <style>.loader{width:400px;height:40px;background-color:#fff;top:50%;left:50%;margin:-40px;position:absolute;border-radius:100px;box-shadow:inset 0 0 0 2px #333;z-index:99999;}.loader:after{border-radius:100px;content:'';position:absolute;background-color:#333;left:2px;top:2px;bottom:2px;right:360px;animation-name:slide;animation-duration:2s;animation-easing-function:linear;animation-iteration-count:infinite;box-shadow:0 1px 2px rgba(0,0,0,.2)}@keyframes slide{0%{right:360px;left:2px}5%{left:2px}50%{right:2px;left:360px}55%{right:2px}100%{right:360px;left:2px}}</style>
     <div class="loader-cover" style="position:absolute;width:100%;height:100%;left:0;top:0;right:0;bottom:0;background:#fff;z-index:99998;"><div class="loader-title" style="position:relative;text-align:center;color:#333;font-weight:bold;font-size:30px;top:150px;">LOADING LEVELS</div><br><div class="loader" style="left:50%;margin-left:-200px;"></div></div>
     <audio id="accelerate-sound" src="sounds/accelerate-trim.mp3"></audio>
@@ -157,9 +157,9 @@
         <p>Level: <span class="level">1</span></p><p style="text-align: right"><span class="time">00:00</span></p>
         <p>
           <small>
-            Use the navigation controls to park in the designated spot.
+            Collect as many coins as possible that appear!
             <br>
-            There are (<span class="danger-spots">1</span>) danger spots, (<span class="blue-spots">2</span>) blue spots, and (<span class="reserved-spots">3</span>) handicap spots.
+            Be careful, and don't try to start a road rage or the game ends!
           </small>
         </p>
       </div>
@@ -200,7 +200,8 @@
       details = {
         level: 1,
         points: 0,
-        time: 90
+        time: 60,
+        coins: 0
       };
 
       THREE.Sound = function Sound(source = null, object = new THREE.Object3D, callback = function(sound) {}, preserve3d = true, volume = 5, loop) {
@@ -211,23 +212,29 @@
           loop && (sound.loop = loop);
           return;
         }
-	      typeof camera.getObjectByProperty("type", "AudioListener") == "undefined" && camera.add(new THREE.AudioListener());
-		    let sound = new THREE.PositionalAudio(camera.getObjectByProperty("type", "AudioListener"));
-		    new THREE.AudioLoader().load(source, (buffer) => {
-		      sound.setBuffer(buffer);
-		      sound.setRefDistance(5);
-		      sound.setVolume(volume);
-		      callback(sound);
-		      sound.play();
-		    });
-		    object.add(sound);
-	    }
+	    typeof camera.getObjectByProperty("type", "AudioListener") == "undefined" && camera.add(new THREE.AudioListener());
+		let sound = new THREE.PositionalAudio(camera.getObjectByProperty("type", "AudioListener"));
+		new THREE.AudioLoader().load(source, (buffer) => {
+		  sound.setBuffer(buffer);
+		  sound.setRefDistance(5);
+		  sound.setVolume(volume);
+		  callback(sound);
+		  sound.play();
+		});
+		object.add(sound);
+	  }
 
       let pauseCountdown = true;
       let countdown = setInterval(() => {
         if (pauseCountdown) return;
         if (details.time - 1 < 1) {
-          return GameOver("You ran out of time!"), clearInterval(countdown);
+          return swal({
+            title: "Good job!",
+            text: "You earned " + details.coins + " points!",
+            button: "Next level"
+          }).then(() => {
+            location.replace(LevelMapping.nextLevel);
+          }), clearInterval(countdown);
         }
         details.time += -1;
         let minutes = Math.floor(details.time / 60);
@@ -310,7 +317,7 @@
         space: null,
         valid: false
       };
-      new THREE.GLTFLoader().load("models/maps/level8.glb", (map) => {
+      new THREE.GLTFLoader().load("models/maps/bonus2.glb", (map) => {
         map = map.scene;
         window.map = map;
         scene.add(map);
@@ -323,7 +330,6 @@
             if (x.children[0].name.includes("ValidParking")) spaces.valid.push(x);
           }
         });
-        document.querySelector(".reserved-spots").textContent = spaces.reserved.length;
         spaces.valid.forEach(x => {
           if (Math.floor(Math.random() * 10) == 0) {
             new THREE.GLTFLoader().load("models/fx/coin.glb", function(coin) {
@@ -344,16 +350,6 @@
             });
           }
         });
-        let chosenDangerSpots = [spaces.valid[Math.floor(Math.random() * spaces.valid.length)], spaces.valid[Math.floor(Math.random() * spaces.valid.length)], spaces.valid[Math.floor(Math.random() * spaces.valid.length)], spaces.valid[Math.floor(Math.random() * spaces.valid.length)]];
-        chosenDangerSpots.forEach(x => {
-          spaces.valid[spaces.valid.indexOf(x)].name += "-danger";
-        });
-        document.querySelector(".danger-spots").textContent = chosenDangerSpots.length;
-        let chosenBlueSpots = [spaces.valid[Math.floor(Math.random() * spaces.valid.length)], spaces.valid[Math.floor(Math.random() * spaces.valid.length)]];
-        chosenBlueSpots.forEach(x => {
-          spaces.valid[spaces.valid.indexOf(x)].name += "-blue";
-        });
-        document.querySelector(".blue-spots").textContent = chosenBlueSpots.length
         setInterval(function() {
           spaces.valid.forEach(space => {
             if (collision(car, space)) {
@@ -395,7 +391,7 @@
       collisionfollower = new THREE.Mesh(new THREE.BoxGeometry(6, 3, 3));
       Notiflix.Notify.init({clickToClose:true,showOnlyTheLastOne:true,timeout:2000,info:{background:"#fff",textColor:"#333",notiflixIconColor:"#333"}});
       carwasintheair = false;
-      function crash() {
+      function crash(car = window.car) {
         if (didCrash) return;
         didCrash = true;
         stop();
@@ -405,6 +401,13 @@
         debris.mixer.clipAction(debris.animations[0]).loop = THREE.LoopOnce;
         debris.mixer.clipAction(debris.animations[0]).play();
         scene.add(debris.mesh);
+        if (car != window.car) return;
+        setTimeout(() => (car.rotateX(.1), camera.fov = 60, camera.updateProjectionMatrix(), clearInterval(i)), 2000);
+        setTimeout(function() {
+          scene.remove(debris.mesh);
+        }, 1500);
+        carCrashSound.play();
+        car.rotateX(-.1);
         let i = setInterval(function() {
           let delta = clock.getDelta();
           debris.mixer.update(delta);
@@ -413,15 +416,15 @@
           camera.fov += (Math.floor(Math.random() * 2) == 0 ? -Math.floor(Math.random() * 5) : Math.floor(Math.random() * 5));
           camera.updateProjectionMatrix();
         });
-        setTimeout(() => (car.rotateX(.1), camera.fov = 60, camera.updateProjectionMatrix(), clearInterval(i)), 2000);
-        carCrashSound.play();
-        car.rotateX(-.1);
         setTimeout(function() {
-          return GameOver("You crashed!");
+          return swal({
+            title: "Good job!",
+            text: "You earned " + details.coins + " points!",
+            button: "Next level"
+          }).then(() => {
+            location.replace(LevelMapping.nextLevel);
+          });
         }, 500);
-        setTimeout(function() {
-          scene.remove(debris.mesh);
-        }, 1500);
       }
       isMoving = false;
       function GameOver(f) {
@@ -446,7 +449,7 @@
         typeof character != "undefined" && (((function() { let k = car.clone(); k.rotation.y += Math.PI / 2; character.position.copy(car.position), character.rotation.copy(k.rotation), character.updateMatrix(), character.translateX(-.8), character.translateY(-2), character.translateZ(.5), character.scale.set(1.4,1.4,1.4) })(), (currentCamera == 1) ? (!(scene.children.indexOf(character) > -1) && scene.add(character)) : ((scene.children.indexOf(character) > -1 && scene.remove(character)))));
         camera.updateMatrixWorld();
         document.querySelector(".radar-globe").querySelector(".center").style.transform = `rotate(${-THREE.MathUtils.radToDeg(car.rotation.y)}deg)`;
-        document.querySelector(".speed").textContent = Math.abs((carAcceleration * 100).toFixed(0));
+        document.querySelector(".speed").textContent = Math.abs((carAcceleration * 25).toFixed(0));
         document.querySelector(".shifter").value = transmission[0].toUpperCase().trim();
         if (currentCamera != 2) {
           document.querySelector("#rearcamera").style.display = "none";
@@ -563,11 +566,11 @@
         }
       }
       function drive(direction) {
-        let maxThreshold = .2;
-        let acc = .01;
+        let maxThreshold = 3.5;
+        let acc = .05;
         if (transmission == "sport") {
-          maxThreshold = .35;
-          acc = .025;
+          maxThreshold = 5;
+          acc = .07;
         }
         if (direction == "forward") {
           carAcceleration >= maxThreshold || (carAcceleration += acc);
@@ -783,7 +786,7 @@
               icon: "images/icons/swal/success.blue.png",
               title: messages[Math.floor(Math.random() * messages.length)],
               text: "You parked in a blue spot! You earned an extra point!",
-              button: "Bonus level",
+              button: "Next level",
               closeOnClickOutside: true,
               closeOnEnterKey: true
             }).then(function() {
@@ -799,7 +802,7 @@
             icon: "success",
             title: messages[Math.floor(Math.random() * messages.length)],
             text: "You parked! Click Next to continue.",
-            button: "Bonus level",
+            button: "Next level",
             closeOnClickOutside: true,
             closeOnEnterKey: true
           }).then(function() {
@@ -931,6 +934,89 @@
           parent.postMessage("click_event-" + className, "*");
         }
       });
+
+      // Auto start driving
+      setInterval(() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowUp" })));
+
+      let currentCars = [];
+      let carModels = [];
+      let cars = ["mini_cooper", "countach_lamborghini", "ferarri_italia", "bmw_3series", "volkswagen_beetle"];
+
+      cars.forEach(x => {
+        new THREE.GLTFLoader().load("models/vehicles/" + x + ".glb", (model) => {
+          carModels.push(model.scene);
+        });
+      });
+
+      setInterval(() => {
+        let model = carModels[Math.floor(Math.random() * carModels.length)];
+        scene.add(model);
+        model.position.copy(car.position);
+        model.translateZ(-10);
+        model.translateX(-40);
+        currentCars.push(model);
+        let drive = setInterval(() => {
+          if (car.position.distanceTo(model.position) >= 300) {
+            return scene.remove(model), clearInterval(drive);
+          }
+          scene.traverse(x => {
+            if (x.name.startsWith("Collider") && collision(model, x)) crash(model);
+            if (x.name.startsWith("Collider") && collision(car, x)) crash(car);
+          });
+          model.translateX(Math.random() * 5);
+          currentCars.forEach(x => {
+            let collider = new THREE.Mesh(new THREE.BoxGeometry(10, 10, 10));
+            collider.position.copy(car.position);
+            collider.rotation.copy(car.rotation);
+            collider.translateX(15);
+            if (collision(collider, x) && x != model) {
+              model.rotateY(.01);
+              if (!collision(collider, x)) {
+                model.rotateY(-.01);
+              }
+            }
+            if (collision(model, x) && x != model) {
+              clearInterval(drive);
+              crash(model);
+              setTimeout(() => {
+                scene.remove(model);
+                scene.remove(x);
+              }, 5000);
+            }
+            if (collision(model, car)) {
+              model.rotateY(.1);
+              crash(model);
+              crash(car);
+              setTimeout(() => (stop(), document.dispatchEvent(new KeyboardEvent("keyup", { key: "ArrowUp" }))), 4000);
+            }
+          });
+        });
+      }, 4000);
+
+      let randomRoadPositions = [49, 27, 0, -25];
+
+      setInterval(() => {
+        new THREE.GLTFLoader().load("models/fx/coin.glb", function(coin) {
+          coin = coin.scene;
+          coin.name = "coin";
+          coin.position.copy(car.position);
+          coin.rotation.copy(car.rotation);
+          coin.translateX(100);
+          coin.position.z = randomRoadPositions[Math.floor(Math.random() * randomRoadPositions.length)];
+          scene.add(coin);
+          let rotate = setInterval(() => {
+            coin.rotateY(.03);
+            if (collision(car, coin)) {
+              new THREE.Sound("sounds/collect.mp3");
+              scene.remove(coin);
+              details.coins += 1;
+              details.points += 1;
+              localStorage.setItem("points", details.points);
+              clearInterval(rotate);
+            }
+          });
+        });
+      }, 1000);
     </script>
   </body>
 </html>
