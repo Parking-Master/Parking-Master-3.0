@@ -393,10 +393,12 @@
       carwasintheair = false;
       function crash(car = window.car) {
         if (didCrash) return;
-        didCrash = true;
-        stop();
-        PointerControls.isLocked = false;
-        TouchControls.isLocked = false;
+        if (car == window.car) {
+          didCrash = true;
+          stop();
+          PointerControls.isLocked = false;
+          TouchControls.isLocked = false;
+        }
         debris.mesh.position.copy(car.position);
         debris.mixer.clipAction(debris.animations[0]).loop = THREE.LoopOnce;
         debris.mixer.clipAction(debris.animations[0]).play();
@@ -542,7 +544,7 @@
       directionalLight.shadow.radius = 4;
       directionalLight.shadow.bias = -0.00006;
       scene.background = new THREE.Color(0x88ccee);
-      scene.fog = new THREE.Fog(0xaacceee, 0, 1000);
+      scene.fog = new THREE.Fog(0xaacceee, 0, 700);
       const PointerControls = new PointerLockControls(camera, renderer.domElement);
       const TouchControls = new THREE.TouchControls(camera, document.body);
       PointerControls.temporaryLock = function() {
@@ -950,10 +952,21 @@
 
       setInterval(() => {
         let model = carModels[Math.floor(Math.random() * carModels.length)];
+        model.traverse((x) => {
+          if (x.material) {
+            x.material.opacity = 0;
+            let fade = setInterval(() => {
+              if (x.material.opacity >= 1) {
+                return clearInterval(fade);
+              }
+              x.material.opacity += .01;
+            }, 50);
+          }
+        });
         scene.add(model);
         model.position.copy(car.position);
-        model.translateZ(-10);
-        model.translateX(-40);
+        model.translateZ(Math.floor(Math.random() * 2) == 0 ? -(Math.floor(Math.random() * 3) * 10) : -(Math.floor(Math.random() * 3) * 10));
+        model.translateX(Math.floor(Math.random() * 2) == 0 ? -100 : 100);
         currentCars.push(model);
         let drive = setInterval(() => {
           if (car.position.distanceTo(model.position) >= 300) {
@@ -966,13 +979,13 @@
           model.translateX(Math.random() * 5);
           currentCars.forEach(x => {
             let collider = new THREE.Mesh(new THREE.BoxGeometry(10, 10, 10));
-            collider.position.copy(car.position);
-            collider.rotation.copy(car.rotation);
-            collider.translateX(15);
+            collider.position.copy(model.position);
+            collider.rotation.copy(model.rotation);
+            collider.translateX(60);
             if (collision(collider, x) && x != model) {
               model.rotateY(.01);
               if (!collision(collider, x)) {
-                model.rotateY(-.01);
+                model.rotateY(-.1);
               }
             }
             if (collision(model, x) && x != model) {
@@ -983,13 +996,31 @@
                 scene.remove(x);
               }, 5000);
             }
+            if (collision(collider, car)) {
+              model.rotateY(.01);
+              if (!collision(collider, car)) {
+                model.rotateY(-.1);
+              }
+            }
             if (collision(model, car)) {
               model.rotateY(.1);
-              crash(model);
-              crash(car);
+              setTimeout(() => {
+                if (collision(model, car)) {
+                  crash();
+                  crash(model);
+                }
+              }, 500);
               setTimeout(() => (stop(), document.dispatchEvent(new KeyboardEvent("keyup", { key: "ArrowUp" }))), 4000);
             }
           });
+          if (Math.floor(Math.random() * 50) == 0) {
+            let chosenLane = randomRoadPositions[Math.floor(Math.random() * randomRoadPositions.length)];
+            let rotation = model.position.z <= chosenLane ? "right" : "left";
+            model.rotateY(rotation == "left" ? .02 : -.02);
+            if (model.position.z - 2 <= chosenLane && model.position.z + 2 >= chosenLane) {
+              model.rotateY(rotation == "left" ? -.02 : .02);
+            }
+          }
         });
       }, 4000);
 
@@ -1016,7 +1047,7 @@
             }
           });
         });
-      }, 1000);
+      }, 2000);
     </script>
   </body>
 </html>
