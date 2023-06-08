@@ -310,7 +310,7 @@
         space: null,
         valid: false
       };
-      new THREE.GLTFLoader().load("models/maps/level8.glb", (map) => {
+      new THREE.GLTFLoader().load("models/maps/level9.glb", (map) => {
         map = map.scene;
         window.map = map;
         scene.add(map);
@@ -344,7 +344,7 @@
             });
           }
         });
-        let chosenDangerSpots = [spaces.valid[Math.floor(Math.random() * spaces.valid.length)], spaces.valid[Math.floor(Math.random() * spaces.valid.length)], spaces.valid[Math.floor(Math.random() * spaces.valid.length)], spaces.valid[Math.floor(Math.random() * spaces.valid.length)]];
+        let chosenDangerSpots = [spaces.valid[Math.floor(Math.random() * spaces.valid.length)], spaces.valid[Math.floor(Math.random() * spaces.valid.length)]];
         chosenDangerSpots.forEach(x => {
           spaces.valid[spaces.valid.indexOf(x)].name += "-danger";
         });
