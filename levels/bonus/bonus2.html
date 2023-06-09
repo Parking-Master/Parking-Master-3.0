@@ -154,7 +154,7 @@
     <div class="ui">
       <img class="vignette" src="images/vignette.png" style="transition: opacity .15s; width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; bottom: 0; right: 0; margin: 0; padding: 0;">
       <div class="description">
-        <p>Level: <span class="level">1</span></p><p style="text-align: right"><span class="time">00:00</span></p>
+        <p>Bonus level: <span class="level">1</span></p><p style="text-align: right"><span class="time">00:00</span></p>
         <p>
           <small>
             Collect as many coins as possible that appear!
@@ -249,7 +249,7 @@
       }, 950);
       if (!localStorage["points"]) localStorage.setItem("points", 0);
       details.points = localStorage["points"] - 0;
-      details.level = (location.pathname.split("/").pop().match(/\d+/g).join("") - 0) + 1;
+      details.level = (location.pathname.split("/").pop().match(/[0-9]/g)[0] - 0) + 1;
       intersection = null;
       didplaycrashsoundtwice = false;
       window.addEventListener("load", (e) => {

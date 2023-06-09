@@ -243,7 +243,7 @@
       }, 950);
       if (!localStorage["points"]) localStorage.setItem("points", 0);
       details.points = localStorage["points"] - 0;
-      details.level = (location.pathname.split("/").pop().match(/\d+/g).join("") - 0) + 1;
+      details.level = LevelMapping.currentLevel;
       intersection = null;
       didplaycrashsoundtwice = false;
       window.addEventListener("load", (e) => {
