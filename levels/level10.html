@@ -344,12 +344,12 @@
             });
           }
         });
-        let chosenDangerSpots = [spaces.valid[Math.floor(Math.random() * spaces.valid.length)], spaces.valid[Math.floor(Math.random() * spaces.valid.length)]];
+        let chosenDangerSpots = [spaces.valid[Math.floor(Math.random() * spaces.valid.length)]];
         chosenDangerSpots.forEach(x => {
           spaces.valid[spaces.valid.indexOf(x)].name += "-danger";
         });
         document.querySelector(".danger-spots").textContent = chosenDangerSpots.length;
-        let chosenBlueSpots = [spaces.valid[Math.floor(Math.random() * spaces.valid.length)], spaces.valid[Math.floor(Math.random() * spaces.valid.length)]];
+        let chosenBlueSpots = [spaces.valid[Math.floor(Math.random() * spaces.valid.length)]];
         chosenBlueSpots.forEach(x => {
           spaces.valid[spaces.valid.indexOf(x)].name += "-blue";
         });
@@ -433,7 +433,7 @@
           closeOnClickOutside: false
         }).then(function(e) {
           if (e) {
-            return window.location.reload();
+            return details.points += -10, localStorage.setItem("points", details.points), window.location.reload();
           }
           top.location.replace("/");
         });

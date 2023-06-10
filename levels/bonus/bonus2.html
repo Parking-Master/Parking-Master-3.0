@@ -438,7 +438,7 @@
           closeOnClickOutside: false
         }).then(function(e) {
           if (e) {
-            return window.location.reload();
+            return details.points += -10, localStorage.setItem("points", details.points), window.location.reload();
           }
           top.location.replace("/");
         });
