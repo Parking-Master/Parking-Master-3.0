@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My License - Parking Master 3.0</title>
+    <style>
+      html, body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        display: none;
+      }
+      .license-border {
+        position: absolute;
+        border: 3px solid #000;
+        height: 35vw;
+        width: 70vw;
+        border-radius: 10px;
+        left: 50%;
+        margin-left: -35vw;
+        top: 50%;
+        margin-top: -17.5vw;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.24);
+      }
+      .license-border * {
+        position: relative;
+      }
+      .license-border .user-picture {
+        width: 20vw;
+        border-radius: 100%;
+      }
+      .license-border .user-name {
+        border-bottom: 1px solid #999;
+      }
+    </style>
+    <script src="scripts/user/user.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+  </head>
+  <body>
+    <div class="license-border">
+      <img src="" class="user-picture">
+      <div style="float: right; margin-top: 1vw; right: 15vw">
+        <span style="font-size: 1vw !important">placeholder name:</span><span class="user-name" style="font-size: 2.5vw"></span>
+        <br>
+        <span style="font-size: 1vw !important">placeholder id:</span><span class="user-license-id" style="font-size: 1vw; font-family: 'Courier New', Courier, monospace"></span>
+      </div>
+      <hr>
+      <div style="word-wrap: break-word; width: 50%; margin: 2vw">
+        <i style="font-size: 1vw !important">This "License" is an official trademark of Parking Master games (c), it is free for commercial/personal use. Licensed under the MIT license.</i>
+        <br>
+        <br>
+        <button onclick="print()">Print this document</button>
+      </div>
+      <div style="float: right; right: 3vw; font-size: 1vw !important; margin-top: -50px">
+        ISSUED: 8/1/2023
+        <br>
+        EXPIRES: 8/1/2040
+        <br>
+        <br>
+        <p style="color: #999">(c) 2021-2023 Parking Master</p>
+      </div>
+    </div>
+    <script>
+      window.addEventListener("load", function() {
+        if (userMan.isLoggedIn) {
+          document.querySelector("html").style.display = "unset";
+          document.querySelector("body").style.display = "unset";
+          if (!userMan.get("license").enabled) {
+            return document.querySelector(".license-border").innerHTML = `
+            <div style="text-align: center">
+            <div style="font-size: 50px">!</div>
+            <h1>No license found</h1>
+            <p>To get your Parking Master License, you must complete the game!</p>
+            <button>&gt; Start</button>
+            </div>
+            `;
+          }
+          document.querySelector(".user-name").textContent += userMan.get("username") + " Official";
+          document.querySelector(".user-picture").src = userMan.get("profilePicture");
+          document.querySelector(".user-license-id").textContent = userMan.get("license").id;
+        } else location.replace("/?m=" + btoa("You cannot access this page unless you are logged in."));
+      });
+    </script>
+  </body>
+</html>

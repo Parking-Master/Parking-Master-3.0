@@ -151,6 +151,7 @@
     </style>
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
     <script src="/scripts/user/user.js" async defer></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/Parking-Master/SecurityJS.128/SecurityJS.128.min.js" data-trust="true" async="" defer=""></script>
   </head>
   <body>
     <base href="../">
@@ -811,7 +812,11 @@
                 userMan.set("points", userMan.get("points") + 1000, () => {}, ["username", "t_password"]);
               }
               if (reward == "PM License™") {
-                userMan.set("license", true, () => {}, ["username", "t_password"]);
+                const licenseKey = {
+                  "id": securityjs.generateKey(50),
+                  "enabled": true
+                };
+                userMan.set("license", licenseKey, () => {}, ["username", "t_password"]);
               }
               if (reward == "Countach Lamborghini") {
                 let items = userMan.get("items");

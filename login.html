@@ -230,7 +230,7 @@
             }
           }, () => {
             swal("There was a problem during login. Please try again.");
-          }, ["email", "password", "username", "t_email", "t_password", "items", "points", "backgroundImage", "profilePicture", "createdAt", "currentTier", "car"], new URLSearchParams(location.search).get("return") || null);
+          }, ["email", "password", "username", "t_email", "t_password", "items", "points", "backgroundImage", "profilePicture", "createdAt", "currentTier", "car", "license"], new URLSearchParams(location.search).get("return") || null);
           setTimeout(() => {
             location.replace("/");
           }, 1000);

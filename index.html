@@ -348,12 +348,9 @@
         location.assign("login.html");
       }
       function logOut() {
-        if (localStorage["u-username"] && localStorage["u-password"]) {
-          Parse.User.logOut();
-          localStorage.removeItem("u-username");
-          localStorage.removeItem("u-password");
-          location.reload(true);
-        }
+        Parse.User.logOut();
+        localStorage.clear();
+        userMan.logOut(true);
       }
       function customizeInfo() {
         if (localStorage["u-username"] && localStorage["u-password"]) {
@@ -380,11 +377,15 @@
         <br>
         <a onclick="customizeInfo()">User info</a>
         <br>
+        <div class="swal-title">Other places</div>
         <br>
         <a onclick="location.assign('users/')">All users</a>
         <br>
         <br>
         <a onclick="location.assign('shop.html')">The shop</a>
+        <br>
+        <br>
+        <a onclick="location.assign('my-license.html')">My License</a>
         `;
         swal({
           title: "Customize/Settings",
@@ -425,6 +426,12 @@
           });
         }
       });
+      if (new URLSearchParams(location.search).get("m")) {
+        swal({
+          icon: "warning",
+          text: atob(new URLSearchParams(location.search).get("m"))
+        });
+      }
     </script>
   </body>
 </html>
