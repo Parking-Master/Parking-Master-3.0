@@ -353,7 +353,7 @@
         userMan.logOut(true);
       }
       function customizeInfo() {
-        if (localStorage["u-username"] && localStorage["u-password"]) {
+        if (userMan.isLoggedIn) {
           location.assign("account.html");
         }
       }
