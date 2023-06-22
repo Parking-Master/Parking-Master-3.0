@@ -1,0 +1,15 @@
+{
+  "update": true,
+  "description": "Added new redirect features for app, upgrade security",
+  "version": "1.1.0",
+  "filesToEdit": true,
+  "filesToAdd": true,
+  "urgent": false,
+  "editedFiles": ["test.txt", "test1.txt", "blank"],
+  "addedFiles": ["test.txt", "test1.txt"],
+  "editSummary": {
+    "test.txt": "VGhpcyUyMGlzJTIwYSUyMHRlc3QlMjBmaWxlJTJDJTIwY3JlYXRlZCUyMGJ5JTIwdGhlJTIwbmV3JTIwdXBkYXRlLg",
+    "test1.txt": "VGhpcyUyMGlzJTIwdGVzdCUyMGZpbGUlMjAxJTJDJTIwY3JlYXRlZCUyMGJ5JTIwdGhlJTIwbmV3JTIwdXBkYXRlLiUyMEl0J3MlMjBhJTIwYml0JTIwZGlmZmVyZW50JTIwdGhlbiUyMHRoZSUyMG9yaWdpbmFsJTIwZmlsZS4",
+    "blank": "YmxhbmslMjBmaWxlIQ"
+  }
+}
