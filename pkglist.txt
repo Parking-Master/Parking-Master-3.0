@@ -2,7 +2,7 @@
   "1.0.0": {},
   "1.1.0": {
     "update": true,
-    "description": "Added new redirect features for app, upgrade security",
+    "description": "Fixed urgent bugs, updated for pre beta-release",
     "version": "2.1.0",
     "filesToEdit": true,
     "filesToAdd": false,
