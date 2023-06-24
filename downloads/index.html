@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Parking Master 3.0 Downloads</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="fonts/icomoon/style.css">
+    <link rel="stylesheet" href="css/owl.carousel.min.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script>const downloadZip=async e=>{const t=e=>new Promise(((t,n)=>{JSZipUtils.getBinaryContent(e,((e,s)=>{e?n(e):t(s)}))})),n=e=>{const t=new Uint8Array(e).subarray(0,4);let n="";for(var s=0;s<t.length;s++)n+=t[s].toString(16);switch(n){case"89504e47":return"png";case"47494638":return"gif";case"ffd8ffe0":case"ffd8ffe1":case"ffd8ffe2":case"ffd8ffe3":case"ffd8ffe8":return"jpg";default:return""}};this.progress=!0;const s=new JSZip;for(const f in e){const a=e[f],r=await t(a),i=`${f}.${n(r)||a.split(".").pop().split(/#|\?/)[0]}`;s.file(i,r,{binary:!0})}await s.generateAsync({type:"blob"}).then((e=>{FileSaver.saveAs(e,"download.zip")}))};function formatBytes(t,B=2){if(0===t)return"0 Bytes";const o=B<0?0:B,a=Math.floor(Math.log(t)/Math.log(1024));return parseFloat((t/Math.pow(1024,a)).toFixed(o))+" "+["Bytes","KB","MB","GB","TB","PB","EB","ZB","YB"][a]}function getFileSize(e){var t="",n=new XMLHttpRequest;return n.open("HEAD",e,!1),n.send(null),200===n.status&&(t=n.getResponseHeader("content-length")),t}function getDownloadURL(o,e){return location.protocol+"//"+location.host+"/"+encodeURIComponent(o.split(" ").reverse().splice(1).reverse().concat([e]).join(" ")+" "+o.split(" ").reverse()[0])+".zip"}</script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/Parking-Master/Simple-Alert@latest/simplealert.min.js"></script>
+    <script type="text/javascript" src="../jszip/dist/jszip.min.js"></script>
+    <script type="text/javascript" src="../jszip/dist/jszip-utils.min.js"></script>
+  </head>
+  <body>
+    <div class="content">
+      <div class="container">
+        <h2 class="mb-5">Downloads</h2>
+        <br>
+        <div class="table-responsive">
+          <table class="table table-striped custom-table">
+            <thead>
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Compatible</th>
+                <th scope="col">Description</th>
+                <th scope="col">Supported <p onclick="simple.alert('This determines whether a package is fully available for the systems it points to.')" style="display:inline-block;text-align:center;position:relative;width:15px!important;height:15px;border-radius:50%;border:1px solid #000;cursor:pointer;font-size:10px;font-weight:bold;justify-content:center;align-items:center;"><b>?</b></p></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr scope="row">
+                <td class="pl-0">
+                  <div class="d-flex align-items-center">
+                    <label class="custom-control ios-switch">
+                    <input type="checkbox" class="ios-switch-control-input">
+                    <span class="ios-switch-control-indicator"></span>
+                    </label>
+                    <a class="d-name" href="https://drive.google.com/u/0/uc?id=16b6nGxKu2EEpBYCKcEAAOBVtSitWAdwT&export=download">Parking Master 3.0 Basic</a>
+                  </div>
+                </td>
+                <td class="d-comp">
+                  Mac
+                  <small class="d-block">*MacOS Big Sur+ / 10.0.0+</small>
+                </td>
+                <td>Includes full game, update, and offline-edition</td>
+                <td>Yes</td>
+                <td><a href="" data-name="Parking-Master-3.0-Mac.zip" onclick="event.preventDefault();simple.alert(`File size: 218 MB\nFile name: ${decodeURIComponent(this.dataset.name)}`)" class="more">Details</a></td>
+              </tr>
+              <tr scope="row">
+                <td class="pl-0">
+                  <div class="d-flex align-items-center">
+                    <label class="custom-control ios-switch">
+                    <input type="checkbox" class="ios-switch-control-input">
+                    <span class="ios-switch-control-indicator"></span>
+                    </label>
+                    <a class="d-name" href="https://drive.google.com/u/0/uc?id=1NYsvDt57V6JIGU-uLz_35hEiNnObWOjw&export=download">Parking Master 3.0 Basic</a>
+                  </div>
+                </td>
+                <td class="d-comp">
+                  Windows
+                  <small class="d-block">*Windows 9/10/11+</small>
+                </td>
+                <td>Includes full game, update, and offline-edition</td>
+                <td>Yes</td>
+                <td><a href="" data-name="Parking-Master-3.0-Windows.zip" onclick="event.preventDefault();simple.alert(`File size: 124.4 MB\nFile name: ${decodeURIComponent(this.dataset.name)}`)" class="more">Details</a></td>
+              </tr>
+              <tr scope="row">
+                <td class="pl-0">
+                  <div class="d-flex align-items-center">
+                    <label class="custom-control ios-switch">
+                    <input type="checkbox" class="ios-switch-control-input">
+                    <span class="ios-switch-control-indicator"></span>
+                    </label>
+                    <a class="d-name" href="https://drive.google.com/u/0/uc?id=14o8CtbDQbe17KTkjxlKVYwdFb0KkISfH&export=download">Parking Master 3.0 Basic</a>
+                  </div>
+                </td>
+                <td class="d-comp">
+                  Linux
+                  <small class="d-block">*Linux 3.0+ / Debian+Ubuntu+Kali</small>
+                </td>
+                <td>Includes full game, update, and offline-edition</td>
+                <td>Yes</td>
+                <td><a href="" data-name="Parking-Master-3.0-Linux.zip" onclick="event.preventDefault();simple.alert(`File size: 120.1 MB\nFile name: ${decodeURIComponent(this.dataset.name)}`)" class="more">Details</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

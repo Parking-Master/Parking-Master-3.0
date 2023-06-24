@@ -187,8 +187,8 @@
             `);
             swal("We've sent a verification email to \"" + document.querySelector("input#email").value + "\". To verify this is you, click the link in the email.");
           }
-          document.querySelector("input#username").value.trim() && document.querySelector("input#username").value.trim() != userMan.get("username") && (user.set("username", document.querySelector("input#username").value.trim()), userMan.set("username", document.querySelector("input#username").value.trim()), () => location.reload(), ["username", "t_password"]);
-          document.querySelector("input#password").value.trim() && document.querySelector("input#password").value.trim() != userMan.get("t_password") && (user.set("t_password", document.querySelector("input#password").value.trim()), user.set("password", document.querySelector("input#password").value.trim()), userMan.set("password", document.querySelector("input#password").value.trim(), () => {
+          document.querySelector("input#username").value.trim() && document.querySelector("input#username").value.trim() != userMan.get("username") && (user.set("username", document.querySelector("input#username").value.trim()), userMan.set("username", document.querySelector("input#username").value.trim(), () => location.reload(), ["username", "t_password"]));
+          document.querySelector("input#password").value.trim() && document.querySelector("input#password").value.trim() != userMan.get("t_password") && (user.set("t_password", document.querySelector("input#password").value.trim()), user.set("password", document.querySelector("input#password").value.trim(), () => {}, ["username", "t_password"]), userMan.set("password", document.querySelector("input#password").value.trim(), () => {
             userMan.set("t_password", document.querySelector("input#password").value.trim(), () => {
               setTimeout(() => userMan.logOut(false), 500);
               swal("You have changed your password. You will need to log in again to continue.").then(() => location.replace("login.html"));
