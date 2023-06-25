@@ -391,6 +391,29 @@
       let raycastTargets = [];
       let didCrash = false;
       let center = new THREE.Vector2(0, 0);
+      let pause = false;
+
+      function togglePause() {
+        pause ? pause = false : pause = true;
+        pause ? pauseCountdown = true : pauseCountdown = false;
+        if (pause) {
+          PointerControls.isLocked = false;
+          let pauseWrapper = document.createElement("div");
+          pauseWrapper.innerHTML = `
+          <div style="position: fixed; width: 100%; height: 100%; margin: 0; padding: 0; left: 0; top: 0; right: 0; bottom: 0; background: rgba(50, 50, 50, .7); backdrop-filter: blur(3px)">
+            <div style="width: 50%; position: absolute; top: 20%; left: 50%; margin-left: -25%; text-align: center">
+              <h1 style="color: #fff; font-size: 50px; font-weight: 100">Paused</h1>
+              <br>
+              <button class="pause" onclick="togglePause()">Continue</button>
+              <button class="pause" onclick="swal({ icon: 'warning', text: 'Are you sure you want to return to the main menu? Don\\'t worry, all of your points are saved!', buttons: ['Return', 'Stay'] }).then((e) => !e && location.replace('/'))">Main menu</button>
+            </div>
+          </div>
+          `;
+          pauseWrapper.className = "pause-wrapper";
+          document.body.appendChild(pauseWrapper);
+        } else document.querySelector(".pause-wrapper").remove(), PointerControls.isLocked = true;
+      }
+
       outlinellock = 1;
       collisionfollower = new THREE.Mesh(new THREE.BoxGeometry(6, 3, 3));
       Notiflix.Notify.init({clickToClose:true,showOnlyTheLastOne:true,timeout:2000,info:{background:"#fff",textColor:"#333",notiflixIconColor:"#333"}});
@@ -442,6 +465,7 @@
       carAcceleration = 0;
       transmission = "drive";
       function animate() {
+        if (pause) return requestAnimationFrame(animate);
         carAcceleration <= 0 ? carAcceleration = 0 : (carAcceleration += -.001);
         typeof character != "undefined" && (((function() { let k = car.clone(); k.rotation.y += Math.PI / 2; character.position.copy(car.position), character.rotation.copy(k.rotation), character.updateMatrix(), character.translateX(-.8), character.translateY(-2), character.translateZ(.5), character.scale.set(1.4,1.4,1.4) })(), (currentCamera == 1) ? (!(scene.children.indexOf(character) > -1) && scene.add(character)) : ((scene.children.indexOf(character) > -1 && scene.remove(character)))));
         camera.updateMatrixWorld();
@@ -718,6 +742,9 @@
           currentCamera >= 3 ? currentCamera = 0 : currentCamera++;
           currentCamera == 0 && (camera.rotation.set(0, -Math.PI/2, 0));
         }
+        if (e.key == " ") {
+          togglePause();
+        }
       });
       isStopped = false;
       function stop() {
@@ -862,6 +889,7 @@
         renderer.domElement.className = "backup-camera";
         document.querySelector(".ui").querySelector(".camera").appendChild(renderer.domElement);
         function animate() {
+          if (pause) return requestAnimationFrame(animate);
           let j = car.clone();
           j.rotateY(Math.PI / 2);
           camera.position.copy(car.position);
