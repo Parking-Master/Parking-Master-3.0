@@ -212,21 +212,33 @@
       	  transform: rotate(0deg);
       	}
       }
+      .banner {
+        transition: background 2s ease 1s !important;
+      }
     </style>
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
     <script src="scripts/user/user.js"></script>
   </head>
   <body>
     <style>body,html,*{cursor:none!important}#follower #circle1,#follower #circle2{cursor:none!important;position:absolute;border-radius:50%;height:0;width:0;margin-top:0;margin-left:0}*,body,html{cursor:none!important}#follower{position:absolute;top:50%;left:50%}#follower #circle1{-webkit-animation:2s infinite pulse;animation:2s infinite pulse;background:#fff}#follower #circle2{-webkit-animation:4s infinite pulse;animation:4s infinite pulse;background:rgba(0,0,0,.8)}@-moz-keyframes pulse{0%,100%{opacity:.2;height:1em;width:1em;margin-top:-.5em;margin-left:-.5em}50%{opacity:.9;height:3em;width:3em;margin-top:-1.5em;margin-left:-1.5em}}@-webkit-keyframes pulse{0%,100%{opacity:.2;height:1em;width:1em;margin-top:-.5em;margin-left:-.5em}50%{opacity:.9;height:3em;width:3em;margin-top:-1.5em;margin-left:-1.5em}}@-o-keyframes pulse{0%,100%{opacity:.2;height:1em;width:1em;margin-top:-.5em;margin-left:-.5em}50%{opacity:.9;height:3em;width:3em;margin-top:-1.5em;margin-left:-1.5em}}@keyframes pulse{0%,100%{opacity:.2;height:1em;width:1em;margin-top:-.5em;margin-left:-.5em}50%{opacity:.9;height:3em;width:3em;margin-top:-1.5em;margin-left:-1.5em}}</style>
+    <div style="position: fixed; left: 0; top: 0; bottom: 0; right: 0; width: 100%; height: 100%; margin: 0; background: #000; z-index: 99999999999999" class="banner"></div>
+    <video style="position: fixed; left: 0; top: 0; bottom: 0; right: 0; width: 100%; height: 100%; margin: 0; z-index: 9999999999999" autoplay src="intro.mp4" onload="document.querySelector('.banner').remove()"></video>
+    <script>
+    document.querySelector("video").onended = () => {
+      document.querySelector("video").remove();
+      document.querySelector(".banner").style.background = "transparent";
+      setTimeout(() => (document.querySelector('.banner').remove()), 2000);
+    }
+    </script>
     <div id="follower" style="pointer-events:none;z-index:9997" class="cursor">
       <div id="circle1"></div>
       <div id="circle2"></div>
     </div>
-    <div class="loader">
+    <!-- <div class="loader">
       <div class="loader-1"></div>
       <br>
       <h2 style="font-size:20px;text-align:center;position:absolute;margin-top:100px;">LOADING</h2>
-    </div>
+    </div> -->
     <script>(function(){var t,n,e,o;t=document.getElementById("follower"),document.getElementById("printout"),n=function(t){return t.clientX},e=function(t){return t.clientY},o=function(o){var u;return u={x:n(o),y:e(o)},t.style.top=u.y+"px",t.style.left=u.x+"px"},window.onmousemove=function(t){var n;return n=t,setTimeout((function(){return o(n)}),1)}}).call(this);</script>
     <h1>PARKING MASTER</h1>
     <h2>3.0</h2>
@@ -251,7 +263,7 @@
     <script>
       window.addEventListener("load", () => {
         if (document.readyState == "complete") {
-          document.querySelector(".loader").remove();
+          // document.querySelector(".loader").remove();
         }
         if (matchMedia("(pointer: coarse)").matches) {
           document.querySelector(".cursor").style.display = "none";
@@ -412,18 +424,7 @@
       }
       window.addEventListener("message", (e) => {
         if (e.data == "rmframe") {
-          let t = -100;
-          let h = setInterval(() => {
-            if (t >= 1500) {
-              return document.querySelector(".transition").style.left = "-100%", document.querySelector(".transition").style.transform = "rotate(0deg)", clearInterval(h);
-            }
-            if (t >= 10) {
-              document.querySelector("#multiplayer-frame").style.display = "none";
-            }
-            t += .3;
-            document.querySelector(".transition").style.left = (t - 5) + "%";
-            document.querySelector(".transition").style.transform = "rotate(" + (t - 3) + "deg)";
-          });
+          location.reload();
         }
       });
       if (new URLSearchParams(location.search).get("m")) {
