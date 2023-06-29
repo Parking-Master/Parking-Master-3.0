@@ -1,34 +1,45 @@
 # <img alt="Favicon" src="favicon.ico" width="24" />&nbsp;&nbsp;Parking Master 3.0
-Fully customizable, responsive game featuring a beautiful 3d experience, along with a custom performance scale.<br>
-Parking Master 3.0: The all-new 3d Parking Master. The fixed version of all the other Parking Master games.<br>
+Welcome to Parking Master 3.0!<br>
+Parking Master 3.0 is the 3rd version of the game "Parking Master" in the series. It has an all-new beautiful site design/layout, an easy access account configuration, and more. 
 **Note: This project is still in production. Some features may be broken, unfinished or unavailable for now.**
 
-\< \< [website url coming soon] \> \>
+### Beta 3.1.2 released!
+You can now play Parking Master 3.0 early!<br>
+The full version (3.2) plans to release 7/9/23.
+
+Play here: https://www.parkingmaster.ml
+
+#### What's new?
+- Added the [new desktop app](https://www.parkingmaster.ml/downloads/)
+- Release beta version
+- Added 6 new cars
+- Added PM License
+- Added full support menu
+- Added premium accounts
 
 ## What is Parking Master 3.0?
-Remember that old Parking Master? Parking Master 1.0? It's the oldest Parking Master ever. Released August 1st, 2021 10:00 AM.<br>
-It's even still available to play: [`parkingmaster.w3spaces.com`](https://parkingmaster.w3spaces.com) (If you're new check it out!)<br>
-For more information on this game go to [`https://github.com/Parking-Master/Parking-Master`](https://github.com/Parking-Master/Parking-Master).
+Parking Master isa a series of 3 parking simulator games. Each game tends to have multiple new features, an entire new UI, and plently of bug fixes from the previous game!
 
-It went from this (1.0):
+Parking Master 3.0 is the third edition in the series.
+
+### History
+
+Version 1.9:
 <img src="https://user-images.githubusercontent.com/88283567/164757620-85fd5706-5ef0-4214-882f-1706ae7071e2.png">
 
-To this (2.0):
-<img src="https://github.com/Parking-Master/Parking-Master-2.0/blob/main/preview.png?raw=true">
+Version 2.9:
+<img src="https://github.com/Parking-Master/Parking-Master-3.0/assets/88283567/cd0c80dd-684c-4583-8b9b-1b5625baf392">
 
-
-To this (3.0):
-<img src="https://user-images.githubusercontent.com/88283567/187799704-f8ced546-8969-4018-9d07-f6b30057131f.png">
-
-In 1 year.
+Version 3.2:
+<img src="https://github.com/Parking-Master/Parking-Master-3.0/assets/88283567/6e7ad210-af24-4868-a7af-908d0a6673cb">
 
 Parking Master is (was) an old-fashioned Parking game. Starting from 1.0, where you park a square 2D block (the car) into the target lines (parking spot).<br>
 
 Then, it went to Parking Master 2.0, which is the "Modern" version of 1.0, with all-new 3D web technology using WebGL and Three.js.
 
-And now, 3.0, which is the latest version of Parking Master, is the latest and greatest one with 3D web technology at it's greatest, for free.
+And now, 3.2 is the latest version with 3D web technology at it's greatest, for free.
 
-## History
+## Other version images
 <details>
 <summary>View history</summary>
 <br>
@@ -61,7 +72,7 @@ Historic site at [`old.parkingmaster.tk`](https://old.parkingmaster.tk)
 </details>
 <hr>
 <h2>Credits</h2>
-A list of items that helped make Parking Master 3.0 possible.
+Credit to the products that made Parking Master 3.0 possible.
 
 ##### SweetAlert \> https://sweetalert.js.org
 ##### TippyJS \> https://atomiks.github.io/tippyjs
