@@ -17,6 +17,8 @@ Play here: https://www.parkingmaster.ml
 - Added full support menu
 - Added premium accounts
 
+Looking for more? [Contact us](mailto:parkingmaster@email.com)
+
 ## What is Parking Master 3.0?
 Parking Master isa a series of 3 parking simulator games. Each game tends to have multiple new features, an entire new UI, and plently of bug fixes from the previous game!
 
