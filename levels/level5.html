@@ -295,7 +295,7 @@
       renderer.setClearAlpha();
       // scene.background = new THREE.Color(0x88ccee);
       scene.fog = new THREE.Fog(0xffffff, 0, 400);
-      renderer.useLegacyLights = false;
+      renderer.useLegacyLights = true, renderer.physicallyCorrectLights = true;
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.VSMShadowMap;
       renderer.outputEncoding = THREE.sRGBEncoding;
@@ -882,7 +882,7 @@
         camera.updateProjectionMatrix();
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(200, 150);
-        renderer.useLegacyLights = false;
+        renderer.useLegacyLights = true, renderer.physicallyCorrectLights = true;
         renderer.outputEncoding = THREE.sRGBEncoding;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.domElement.className = "backup-camera";
