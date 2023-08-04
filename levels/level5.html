@@ -459,7 +459,7 @@
           if (e) {
             return details.points += -10, localStorage.setItem("points", details.points), window.location.reload();
           }
-          top.location.replace("/");
+          top.location.replace(".");
         });
         if (details.points < 10) document.querySelectorAll(".swal-button")[1].disabled = "disabled";
       }

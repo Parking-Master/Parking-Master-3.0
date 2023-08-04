@@ -444,7 +444,7 @@
           if (e) {
             return details.points += -20, localStorage.setItem("points", details.points), window.location.reload();
           }
-          top.location.replace("/");
+          top.location.replace(".");
         });
         if (details.points < 20) document.querySelectorAll(".swal-button")[1].disabled = "disabled";
       }
@@ -871,7 +871,7 @@
               button: false
             });
             setTimeout(() => {
-              location.replace("/");
+              location.replace(".");
             }, 3000);
           });
           document.querySelector(".swal-button").style = "background:#6cc22e!important";
