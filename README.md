@@ -7,7 +7,7 @@ Parking Master 3.0 is the 3rd version of the game "Parking Master" in the series
 You can now play Parking Master 3.0 early!<br>
 The full version (3.2) plans to release 7/9/23.
 
-Play here: https://www.parkingmaster.ml
+_We're still working on the domain for this project!_
 
 #### What's new?
 - Added the [new desktop app](https://www.parkingmaster.ml/downloads/)
