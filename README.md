@@ -1,11 +1,11 @@
 # <img alt="Favicon" src="favicon.ico" width="24" />&nbsp;&nbsp;Parking Master 3.0
 Welcome to Parking Master 3.0!<br>
 Parking Master 3.0 is the 3rd version of the game "Parking Master" in the series. It has an all-new beautiful site design/layout, an easy access account configuration, and more. 
-**Note: This project is still in production. Some features may be broken, unfinished or unavailable for now.**
+<!-- **Note: This project is still in production. Some features may be broken, unfinished or unavailable for now.** -->
 
-### Beta 3.1.2 released!
-You can now play Parking Master 3.0 early!<br>
-The full version (3.2) plans to release 7/9/23.
+### Version 3.2 released!
+You can now play the full version of Parking Master 3.0!<br>
+The full version (3.2) was released 7/9/23.
 
 Play here: [parkingmaster.serveo.net](https://parkingmaster.serveo.net)
 
