@@ -10,7 +10,7 @@ The full version (3.2) was released 7/9/23.
 Play here: [parkingmaster.uk.to](https://parkingmaster.uk.to)
 
 #### What's new?
-- Added the [new desktop app](https://www.parkingmaster.uk.to/downloads/)
+- Added the [new desktop app](https://parkingmaster.uk.to/downloads/)
 - Release beta version
 - Added 6 new cars
 - Added PM License
