@@ -1,5 +1,5 @@
 (async () => {
-  await import("https://npmcdn.com/parse@3.4.4/dist/parse.min.js");
+  await import("https://unpkg.com/parse@3.4.4/dist/parse.min.js");
   Parse.initialize("sixz0SUXueXB5ag6LNjX7RcHk3KAQI8UCA3shKwh","09yqaddyyjykuIyeBHlNyTTnnXTS73ZryQNaB0vp"),Parse.serverURL="https://parseapi.back4app.com/";
   Parse.serverURL = "https://parseapi.back4app.com/";
   userMan = {};
